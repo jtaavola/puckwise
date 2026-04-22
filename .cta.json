@@ -1,5 +1,5 @@
 {
-  "projectName": "hockey-stat-chat",
+  "projectName": "puckwise",
   "mode": "file-router",
   "typescript": true,
   "packageManager": "npm",
