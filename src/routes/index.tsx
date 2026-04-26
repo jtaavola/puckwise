@@ -28,10 +28,10 @@ function Puckwise() {
 					<img
 						src="/logo.png"
 						alt="Puckwise"
-						className="mb-4 size-28 object-contain"
+						className="mb-2 size-28 object-contain"
 					/>
-					<h1 className="m-0 text-2xl font-semibold tracking-tight">
-						Puckwise
+					<h1 className="m-0 text-2xl font-bold tracking-tight">
+						PUCK<span className="text-primary">WISE</span>
 					</h1>
 					<p className="mt-1 mb-0 text-sm text-muted-foreground">
 						Ask questions about hockey statistics
