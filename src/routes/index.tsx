@@ -25,6 +25,11 @@ function Puckwise() {
 		<main className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-8 text-foreground">
 			<div className="flex w-full max-w-2xl flex-col items-center">
 				<div className="mb-8 flex flex-col items-center">
+					<img
+						src="/logo.png"
+						alt="Puckwise"
+						className="mb-4 size-28 object-contain"
+					/>
 					<h1 className="m-0 text-2xl font-semibold tracking-tight">
 						Puckwise
 					</h1>
