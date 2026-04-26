@@ -52,6 +52,17 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			</head>
 			<body className="font-sans antialiased [overflow-wrap:anywhere] selection:bg-[rgba(79,184,178,0.24)]">
 				<TanStackQueryProvider>
+					<header className="fixed inset-x-0 top-0 z-50">
+						<div className="flex h-16 items-center px-4 sm:px-6 lg:px-8">
+							<a
+								href="/"
+								className="text-xl font-bold tracking-tight no-underline"
+								aria-label="Puckwise home"
+							>
+								PUCK<span className="text-primary">WISE</span>
+							</a>
+						</div>
+					</header>
 					{children}
 					<TanStackDevtools
 						config={{
