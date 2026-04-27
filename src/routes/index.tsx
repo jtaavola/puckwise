@@ -1,14 +1,24 @@
 import { IconArrowNarrowUp } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
+import { nanoid } from "nanoid";
 import { useState } from "react";
+import {
+	Conversation,
+	ConversationContent,
+	ConversationScrollButton,
+} from "#/components/ai-elements/conversation";
+import {
+	Message,
+	MessageContent,
+	MessageResponse,
+} from "#/components/ai-elements/message";
 import {
 	PromptInput,
 	PromptInputBody,
 	PromptInputFooter,
 	PromptInputSubmit,
 	PromptInputTextarea,
-	PromptInputTools,
 } from "#/components/ai-elements/prompt-input";
 import { Suggestion, Suggestions } from "#/components/ai-elements/suggestion";
 
@@ -23,14 +33,20 @@ const suggestions = [
 	"Show me the Boston Bruins' record",
 ];
 
+type ChatMessage = {
+	id: string;
+	text: string;
+};
+
 function Puckwise() {
-	const [hasSubmitted, setHasSubmitted] = useState(false);
+	const [messages, setMessages] = useState<ChatMessage[]>([]);
+	const hasSubmitted = messages.length > 0;
 
 	// TODO: Respect prefers-reduced-motion before shipping; consider MotionConfig or useReducedMotion.
 	return (
-		<main className="min-h-screen overflow-hidden bg-background px-4 py-6 text-foreground sm:py-8">
+		<main className="h-screen overflow-hidden bg-background px-4 py-6 text-foreground sm:py-8">
 			<motion.div
-				className="mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-2xl flex-col items-center sm:min-h-[calc(100vh-4rem)]"
+				className="mx-auto flex h-full min-h-0 w-full max-w-2xl flex-col items-center"
 				layout
 				transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
 			>
@@ -65,16 +81,51 @@ function Puckwise() {
 						)}
 					</AnimatePresence>
 
+					<AnimatePresence initial={false}>
+						{hasSubmitted && (
+							<motion.div
+								className="min-h-0 w-full flex-1 py-4"
+								exit={{ opacity: 0 }}
+								initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
+								animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+								transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
+							>
+								<Conversation className="h-full">
+									<ConversationContent className="px-0 pb-8">
+										{messages.map((message) => (
+											<Message from="user" key={message.id}>
+												<MessageContent>
+													<MessageResponse>{message.text}</MessageResponse>
+												</MessageContent>
+											</Message>
+										))}
+									</ConversationContent>
+									<ConversationScrollButton />
+								</Conversation>
+							</motion.div>
+						)}
+					</AnimatePresence>
+
 					<motion.div
-						className="w-full"
+						className="w-full shrink-0"
 						layout
 						transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
 					>
 						<PromptInput
 							onSubmit={(message) => {
-								if (message.text.trim() || message.files.length > 0) {
-									setHasSubmitted(true);
+								const text = message.text.trim();
+
+								if (!text) {
+									return;
 								}
+
+								setMessages((currentMessages) => [
+									...currentMessages,
+									{
+										id: nanoid(),
+										text,
+									},
+								]);
 							}}
 						>
 							<PromptInputBody>
@@ -84,8 +135,7 @@ function Puckwise() {
 									}
 								/>
 							</PromptInputBody>
-							<PromptInputFooter>
-								<PromptInputTools />
+							<PromptInputFooter className="justify-end">
 								<PromptInputSubmit>
 									<IconArrowNarrowUp />
 								</PromptInputSubmit>
