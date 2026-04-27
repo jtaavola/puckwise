@@ -119,10 +119,12 @@ function Puckwise() {
 									return;
 								}
 
+								const id = nanoid();
+
 								setMessages((currentMessages) => [
 									...currentMessages,
 									{
-										id: nanoid(),
+										id,
 										text,
 									},
 								]);
