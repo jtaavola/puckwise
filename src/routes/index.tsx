@@ -1,4 +1,4 @@
-import { IconSend2 } from "@tabler/icons-react";
+import { IconArrowNarrowUp } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
 import {
 	PromptInput,
@@ -6,6 +6,7 @@ import {
 	PromptInputFooter,
 	PromptInputSubmit,
 	PromptInputTextarea,
+	PromptInputTools,
 } from "#/components/ai-elements/prompt-input";
 import { Suggestion, Suggestions } from "#/components/ai-elements/suggestion";
 
@@ -41,15 +42,15 @@ function Puckwise() {
 				<PromptInput onSubmit={() => undefined}>
 					<PromptInputBody>
 						<PromptInputTextarea
-							className="min-h-14 px-5 py-4 text-base"
 							placeholder={
 								'Ask about NHL stats... (e.g., "Who has the most goals this season?")'
 							}
 						/>
 					</PromptInputBody>
-					<PromptInputFooter className="justify-end px-3 pb-3">
-						<PromptInputSubmit className="size-11 rounded-xl" size="icon">
-							<IconSend2 aria-hidden="true" />
+					<PromptInputFooter>
+						<PromptInputTools />
+						<PromptInputSubmit>
+							<IconArrowNarrowUp />
 						</PromptInputSubmit>
 					</PromptInputFooter>
 				</PromptInput>
