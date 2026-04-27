@@ -1,5 +1,6 @@
 {
   "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["src/components/ai-elements", "src/components/ui"],
   "compilerOptions": {
     "target": "ES2022",
     "jsx": "react-jsx",
