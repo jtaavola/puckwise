@@ -29,10 +29,7 @@ export default function GuitarRecommendation({ id }: { id: string }) {
 					<button
 						type="button"
 						onClick={() => {
-							navigate({
-								to: "/example/guitars/$guitarId",
-								params: { guitarId: guitar.id.toString() },
-							});
+							navigate({ to: "/" });
 							showAIAssistant.setState(() => false);
 						}}
 						className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-4 py-1.5 rounded-lg text-sm hover:opacity-90 transition-opacity"
