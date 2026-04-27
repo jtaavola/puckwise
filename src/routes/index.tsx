@@ -28,9 +28,7 @@ const suggestions = [
 	"Who leads the league in goals this season?",
 	"Show me the current standings",
 	"Who has the most 5-on-5 goals in the last 3 years?",
-	"What are Connor McDavid's stats?",
 	"Who leads in assists this season?",
-	"Show me the Boston Bruins' record",
 ];
 
 type ChatMessage = {
@@ -40,7 +38,26 @@ type ChatMessage = {
 
 function Puckwise() {
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
+	const [inputValue, setInputValue] = useState("");
 	const hasSubmitted = messages.length > 0;
+
+	const submitMessage = (messageText: string) => {
+		const text = messageText.trim();
+
+		if (!text) {
+			return;
+		}
+
+		const id = nanoid();
+
+		setMessages((currentMessages) => [
+			...currentMessages,
+			{
+				id,
+				text,
+			},
+		]);
+	};
 
 	// TODO: Respect prefers-reduced-motion before shipping; consider MotionConfig or useReducedMotion.
 	return (
@@ -113,28 +130,17 @@ function Puckwise() {
 					>
 						<PromptInput
 							onSubmit={(message) => {
-								const text = message.text.trim();
-
-								if (!text) {
-									return;
-								}
-
-								const id = nanoid();
-
-								setMessages((currentMessages) => [
-									...currentMessages,
-									{
-										id,
-										text,
-									},
-								]);
+								submitMessage(message.text);
+								setInputValue("");
 							}}
 						>
 							<PromptInputBody>
 								<PromptInputTextarea
+									onChange={(event) => setInputValue(event.currentTarget.value)}
 									placeholder={
 										'Ask about NHL stats... (e.g., "Who has the most goals this season?")'
 									}
+									value={inputValue}
 								/>
 							</PromptInputBody>
 							<PromptInputFooter className="justify-end">
@@ -157,12 +163,16 @@ function Puckwise() {
 									<p className="mb-3 text-center text-sm text-muted-foreground">
 										Try asking:
 									</p>
-									<Suggestions className="flex-wrap justify-center whitespace-normal">
+									<Suggestions className="justify-center">
 										{suggestions.map((suggestion) => (
 											<Suggestion
 												key={suggestion}
+												onClick={(selectedSuggestion) => {
+													setInputValue(selectedSuggestion);
+													submitMessage(selectedSuggestion);
+													setInputValue("");
+												}}
 												suggestion={suggestion}
-												className="h-auto px-4 py-2"
 											/>
 										))}
 									</Suggestions>
