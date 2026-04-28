@@ -6,21 +6,14 @@ import {
 } from "@tanstack/ai";
 import { createOpenRouterText } from "@tanstack/ai-openrouter";
 import { createFileRoute } from "@tanstack/react-router";
-import type { OpenRouterTextModels } from "node_modules/@tanstack/ai-openrouter/dist/esm/adapters/text";
+import type {
+	OpenRouterTextAdapter,
+	OpenRouterTextModels,
+} from "node_modules/@tanstack/ai-openrouter/dist/esm/adapters/text";
 import { z } from "zod";
+import { getNhlPlayerLanding, searchNhlPlayers } from "#/lib/nhl-tools";
 
 type TextOnlyModelMessage = ModelMessage<string | null>;
-
-const messagePartSchema = z.union([
-	z.looseObject({
-		type: z.literal("text"),
-		content: z.string(),
-	}),
-	z.looseObject({
-		type: z.literal("thinking"),
-		content: z.string(),
-	}),
-]);
 
 const chatRequestSchema = z.looseObject({
 	messages: z
@@ -28,7 +21,7 @@ const chatRequestSchema = z.looseObject({
 			z.looseObject({
 				id: z.string(),
 				role: z.enum(["user", "assistant"]),
-				parts: z.array(messagePartSchema),
+				parts: z.array(z.any()),
 			}),
 		)
 		.min(1),
@@ -52,21 +45,19 @@ function convertMessagesToTextOnlyModelMessages(
 	return modelMessages;
 }
 
-function getOpenRouterAdapter() {
-	const apiKey = process.env.LLM_API_KEY;
-	const model = process.env.LLM_MODEL;
-
-	if (!apiKey) {
-		throw new Error("Missing LLM_API_KEY environment variable");
+function createChatAdapter() {
+	if (!process.env.LLM_MODEL) {
+		throw new Error("LLM_MODEL environment variable is not set");
 	}
 
-	if (!model) {
-		throw new Error("Missing LLM_model environment variable");
+	if (!process.env.OPENROUTER_API_KEY) {
+		throw new Error("OPENROUTER_API_KEY environment variable is not set");
 	}
 
-	return createOpenRouterText(model as OpenRouterTextModels, apiKey, {
-		serverURL: process.env.LLM_BASE_URL,
-	});
+	return createOpenRouterText(
+		process.env.LLM_MODEL as OpenRouterTextModels,
+		process.env.OPENROUTER_API_KEY,
+	);
 }
 
 export const Route = createFileRoute("/api/chat")({
@@ -78,21 +69,44 @@ export const Route = createFileRoute("/api/chat")({
 				try {
 					payload = chatRequestSchema.parse(await request.json());
 				} catch {
-					return Response.json({ error: "Invalid chat request" }, { status: 400 });
+					return Response.json(
+						{ error: "Invalid chat request" },
+						{ status: 400 },
+					);
 				}
 
 				try {
-					const messages = convertMessagesToTextOnlyModelMessages(payload.messages);
+					const messages = convertMessagesToTextOnlyModelMessages(
+						payload.messages,
+					);
 
 					if (!messages) {
-						return Response.json({ error: "Invalid chat request" }, { status: 400 });
+						return Response.json(
+							{ error: "Invalid chat request" },
+							{ status: 400 },
+						);
 					}
 
 					const stream = chat({
-						adapter: getOpenRouterAdapter(),
+						adapter: createChatAdapter(),
 						messages,
+						tools: [searchNhlPlayers, getNhlPlayerLanding],
 						systemPrompts: [
-							"You are Puckwise, an AI hockey analytics assistant. Answer clearly and concisely. If current NHL data is required and you do not have access to a live stats tool, say so instead of inventing statistics.",
+							`You are Puckwise, an AI hockey analytics assistant. Answer clearly and concisely.
+
+You have access to live NHL data through two tools:
+- searchNhlPlayers: resolve a player's last name to a list of matching player IDs.
+- getNhlPlayerLanding: fetch a player's full profile and season-by-season totals.
+
+Use these tools when answering questions about current or historical NHL players, teams, games, stats, scores, standings, schedules, rosters, boxscores, or play-by-play. Do not invent statistics.
+
+Rules for interpreting stats:
+- When filtering seasonTotals from getNhlPlayerLanding, use leagueAbbrev === "NHL" and gameTypeId === 2 for regular-season NHL stats.
+- For playoff stats, use gameTypeId === 3.
+- When the user says "last year", prefer the previous completed NHL season, not a season that is currently in progress.
+- If a player's name is ambiguous (multiple matches from searchNhlPlayers), ask a clarifying question instead of guessing.
+- If no player matches, tell the user no matching NHL player was found and ask for more detail.
+- Ignore non-NHL rows unless the user explicitly asks about junior, international, AHL, or other leagues.`,
 						],
 					});
 

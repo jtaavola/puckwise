@@ -141,7 +141,8 @@ function Puckwise() {
 											<Message from="assistant">
 												<MessageContent>
 													<MessageResponse>
-														Sorry, something went wrong while generating a response.
+														Sorry, something went wrong while generating a
+														response.
 													</MessageResponse>
 												</MessageContent>
 											</Message>
