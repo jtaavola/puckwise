@@ -63,14 +63,14 @@ function Puckwise() {
 
 	// TODO: Respect prefers-reduced-motion before shipping; consider MotionConfig or useReducedMotion.
 	return (
-		<main className="h-screen overflow-hidden bg-background px-4 py-6 text-foreground sm:py-8">
+		<main className="h-screen overflow-hidden bg-background py-6 text-foreground sm:py-8">
 			<motion.div
-				className="mx-auto flex h-full min-h-0 w-full max-w-2xl flex-col items-center"
+				className="mx-auto flex h-full min-h-0 w-full flex-col"
 				layout
 				transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
 			>
 				<motion.div
-					className={`flex w-full min-h-0 flex-1 flex-col items-center ${
+					className={`flex w-full min-h-0 flex-1 flex-col ${
 						hasSubmitted ? "justify-end" : "justify-center"
 					}`}
 					layout
@@ -110,7 +110,7 @@ function Puckwise() {
 								transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
 							>
 								<Conversation className="h-full">
-									<ConversationContent className="px-0 pb-8">
+									<ConversationContent className="mx-auto max-w-2xl px-4 pb-8">
 										{visibleMessages.map((message) => (
 											<Message from={message.role} key={message.id}>
 												<MessageContent>
@@ -154,7 +154,7 @@ function Puckwise() {
 					</AnimatePresence>
 
 					<motion.div
-						className="w-full shrink-0"
+						className="mx-auto w-full max-w-2xl shrink-0 px-4"
 						layout
 						transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
 					>
@@ -183,7 +183,7 @@ function Puckwise() {
 					<AnimatePresence initial={false} mode="popLayout">
 						{!hasSubmitted && (
 							<motion.div
-								className="w-full"
+								className="mx-auto w-full max-w-2xl px-4"
 								exit={{ opacity: 0, y: 26, filter: "blur(8px)" }}
 								initial={{ opacity: 1, y: 0, filter: "blur(0px)" }}
 								transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
