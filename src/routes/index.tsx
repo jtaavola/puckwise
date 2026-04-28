@@ -140,7 +140,9 @@ function Puckwise() {
 										{error && (
 											<Message from="assistant">
 												<MessageContent>
-													<MessageResponse>{`Error: ${error.message}`}</MessageResponse>
+													<MessageResponse>
+														Sorry, something went wrong while generating a response.
+													</MessageResponse>
 												</MessageContent>
 											</Message>
 										)}
