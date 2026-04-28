@@ -70,7 +70,7 @@ function Puckwise() {
 				transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
 			>
 				<motion.div
-					className={`flex w-full flex-1 flex-col items-center ${
+					className={`flex w-full min-h-0 flex-1 flex-col items-center ${
 						hasSubmitted ? "justify-end" : "justify-center"
 					}`}
 					layout
