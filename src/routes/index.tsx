@@ -1,7 +1,8 @@
 import { IconArrowNarrowUp } from "@tabler/icons-react";
+import { fetchServerSentEvents } from "@tanstack/ai-client";
+import { useChat } from "@tanstack/ai-react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
-import { nanoid } from "nanoid";
 import { useState } from "react";
 import {
 	Conversation,
@@ -20,6 +21,7 @@ import {
 	PromptInputSubmit,
 	PromptInputTextarea,
 } from "#/components/ai-elements/prompt-input";
+import { Shimmer } from "#/components/ai-elements/shimmer";
 import { Suggestion, Suggestions } from "#/components/ai-elements/suggestion";
 
 export const Route = createFileRoute("/")({ component: Puckwise });
@@ -31,32 +33,32 @@ const suggestions = [
 	"Who leads in assists this season?",
 ];
 
-type ChatMessage = {
-	id: string;
-	text: string;
-};
-
 function Puckwise() {
-	const [messages, setMessages] = useState<ChatMessage[]>([]);
+	const { error, isLoading, messages, sendMessage } = useChat({
+		connection: fetchServerSentEvents("/api/chat"),
+	});
 	const [inputValue, setInputValue] = useState("");
 	const hasSubmitted = messages.length > 0;
+	// we aren't displaying thinking tokens, so visible messages are the ones that have text tokens
+	const visibleMessages = messages.filter(
+		(message) =>
+			message.role !== "assistant" ||
+			message.parts.some(
+				(part) => part.type === "text" && part.content.trim().length > 0,
+			),
+	);
+	const isWaitingForVisibleResponse =
+		isLoading && visibleMessages.at(-1)?.role === "user";
 
-	const submitMessage = (messageText: string) => {
+	const submitMessage = async (messageText: string) => {
 		const text = messageText.trim();
 
-		if (!text) {
+		if (!text || isLoading) {
 			return;
 		}
 
-		const id = nanoid();
-
-		setMessages((currentMessages) => [
-			...currentMessages,
-			{
-				id,
-				text,
-			},
-		]);
+		setInputValue("");
+		await sendMessage(text);
 	};
 
 	// TODO: Respect prefers-reduced-motion before shipping; consider MotionConfig or useReducedMotion.
@@ -109,13 +111,39 @@ function Puckwise() {
 							>
 								<Conversation className="h-full">
 									<ConversationContent className="px-0 pb-8">
-										{messages.map((message) => (
-											<Message from="user" key={message.id}>
+										{visibleMessages.map((message) => (
+											<Message from={message.role} key={message.id}>
 												<MessageContent>
-													<MessageResponse>{message.text}</MessageResponse>
+													{message.parts.map((part, idx) => {
+														if (part.type === "text") {
+															return (
+																// biome-ignore lint/suspicious/noArrayIndexKey: yolo
+																<MessageResponse key={idx}>
+																	{part.content}
+																</MessageResponse>
+															);
+														}
+														return null;
+													})}
 												</MessageContent>
 											</Message>
 										))}
+										{isWaitingForVisibleResponse && (
+											<Message from="assistant">
+												<MessageContent aria-live="polite">
+													<Shimmer className="text-sm" duration={1.6}>
+														Getting pucks deep…
+													</Shimmer>
+												</MessageContent>
+											</Message>
+										)}
+										{error && (
+											<Message from="assistant">
+												<MessageContent>
+													<MessageResponse>{`Error: ${error.message}`}</MessageResponse>
+												</MessageContent>
+											</Message>
+										)}
 									</ConversationContent>
 									<ConversationScrollButton />
 								</Conversation>
@@ -130,8 +158,7 @@ function Puckwise() {
 					>
 						<PromptInput
 							onSubmit={(message) => {
-								submitMessage(message.text);
-								setInputValue("");
+								void submitMessage(message.text);
 							}}
 						>
 							<PromptInputBody>
@@ -144,7 +171,7 @@ function Puckwise() {
 								/>
 							</PromptInputBody>
 							<PromptInputFooter className="justify-end">
-								<PromptInputSubmit>
+								<PromptInputSubmit disabled={isLoading}>
 									<IconArrowNarrowUp />
 								</PromptInputSubmit>
 							</PromptInputFooter>
@@ -169,8 +196,7 @@ function Puckwise() {
 												key={suggestion}
 												onClick={(selectedSuggestion) => {
 													setInputValue(selectedSuggestion);
-													submitMessage(selectedSuggestion);
-													setInputValue("");
+													void submitMessage(selectedSuggestion);
 												}}
 												suggestion={suggestion}
 											/>
