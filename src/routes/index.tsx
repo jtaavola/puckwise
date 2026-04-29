@@ -1,8 +1,9 @@
 import { useChat } from "@ai-sdk/react";
+import { usePostHog } from "@posthog/react";
 import { IconArrowNarrowUp } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	Conversation,
 	ConversationContent,
@@ -33,10 +34,12 @@ const suggestions = [
 ];
 
 function Puckwise() {
+	const posthog = usePostHog();
 	const { error, messages, sendMessage, status } = useChat();
 	const isLoading = status === "submitted" || status === "streaming";
 	const [inputValue, setInputValue] = useState("");
 	const hasSubmitted = messages.length > 0;
+	const errorCapturedRef = useRef(false);
 	// we aren't displaying thinking tokens, so visible messages are the ones that have text tokens
 	const visibleMessages = messages.filter(
 		(message) =>
@@ -48,6 +51,21 @@ function Puckwise() {
 	const isWaitingForVisibleResponse =
 		isLoading && visibleMessages.at(-1)?.role === "user";
 
+	useEffect(() => {
+		if (error && !errorCapturedRef.current) {
+			errorCapturedRef.current = true;
+			posthog.capture("chat_error_displayed", {
+				error_message: error.message,
+				conversation_length: messages.length,
+			});
+			posthog.captureException(error);
+		}
+
+		if (!error) {
+			errorCapturedRef.current = false;
+		}
+	}, [error, messages.length, posthog]);
+
 	const submitMessage = async (messageText: string) => {
 		const text = messageText.trim();
 
@@ -55,8 +73,21 @@ function Puckwise() {
 			return;
 		}
 
+		posthog.capture("chat_message_submitted", {
+			question_length: text.length,
+			conversation_length: messages.length,
+		});
+
 		setInputValue("");
-		sendMessage({ text });
+		sendMessage(
+			{ text },
+			{
+				headers: {
+					"X-PostHog-Session-Id": posthog.get_session_id() ?? "",
+					"X-PostHog-Distinct-Id": posthog.get_distinct_id() ?? "",
+				},
+			},
+		);
 	};
 
 	// TODO: Respect prefers-reduced-motion before shipping; consider MotionConfig or useReducedMotion.
@@ -165,9 +196,7 @@ function Puckwise() {
 							<PromptInputBody>
 								<PromptInputTextarea
 									onChange={(event) => setInputValue(event.currentTarget.value)}
-									placeholder={
-										'Ask about NHL stats...'
-									}
+									placeholder={"Ask about NHL stats..."}
 									value={inputValue}
 								/>
 							</PromptInputBody>
@@ -196,6 +225,9 @@ function Puckwise() {
 											<Suggestion
 												key={suggestion}
 												onClick={(selectedSuggestion) => {
+													posthog.capture("suggestion_clicked", {
+														suggestion: selectedSuggestion,
+													});
 													setInputValue(selectedSuggestion);
 													void submitMessage(selectedSuggestion);
 												}}

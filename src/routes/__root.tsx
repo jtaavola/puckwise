@@ -1,3 +1,4 @@
+import { PostHogProvider } from "@posthog/react";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
 import {
@@ -50,32 +51,42 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<HeadContent />
 			</head>
 			<body className="font-sans antialiased [overflow-wrap:anywhere] selection:bg-[rgba(79,184,178,0.24)]">
-				<TanStackQueryProvider>
-					<header className="fixed inset-x-0 top-0 z-50">
-						<div className="flex h-16 items-center px-4 sm:px-6 lg:px-8">
-							<a
-								href="/"
-								className="text-xl font-bold tracking-tight no-underline"
-								aria-label="Puckwise home"
-							>
-								PUCK<span className="text-primary">WISE</span>
-							</a>
-						</div>
-					</header>
-					{children}
-					<TanStackDevtools
-						config={{
-							position: "bottom-right",
-						}}
-						plugins={[
-							{
-								name: "Tanstack Router",
-								render: <TanStackRouterDevtoolsPanel />,
-							},
-							TanStackQueryDevtools,
-						]}
-					/>
-				</TanStackQueryProvider>
+				<PostHogProvider
+					apiKey={import.meta.env.VITE_PUBLIC_POSTHOG_PROJECT_TOKEN || ""}
+					options={{
+						api_host: import.meta.env.VITE_PUBLIC_POSTHOG_HOST,
+						ui_host: "https://us.posthog.com",
+						defaults: "2026-01-30",
+						capture_exceptions: true,
+					}}
+				>
+					<TanStackQueryProvider>
+						<header className="fixed inset-x-0 top-0 z-50">
+							<div className="flex h-16 items-center px-4 sm:px-6 lg:px-8">
+								<a
+									href="/"
+									className="text-xl font-bold tracking-tight no-underline"
+									aria-label="Puckwise home"
+								>
+									PUCK<span className="text-primary">WISE</span>
+								</a>
+							</div>
+						</header>
+						{children}
+						<TanStackDevtools
+							config={{
+								position: "bottom-right",
+							}}
+							plugins={[
+								{
+									name: "Tanstack Router",
+									render: <TanStackRouterDevtoolsPanel />,
+								},
+								TanStackQueryDevtools,
+							]}
+						/>
+					</TanStackQueryProvider>
+				</PostHogProvider>
 				<Scripts />
 			</body>
 		</html>
