@@ -93,7 +93,8 @@ export async function searchNhlPlayers(
 	lastName: string,
 	firstName?: string,
 ): Promise<NhlPlayerSearchResult[]> {
-	const escapeCayenneValue = (value: string) => value.replaceAll('"', '\\"');
+	const escapeCayenneValue = (value: string) =>
+		value.replaceAll("\\", "\\\\").replaceAll('"', '\\"');
 	const filters = [`lastName="${escapeCayenneValue(lastName)}"`];
 
 	if (firstName) {
