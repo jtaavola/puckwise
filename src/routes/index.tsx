@@ -3,7 +3,7 @@ import { usePostHog } from "@posthog/react";
 import { IconArrowNarrowUp } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
 	Conversation,
 	ConversationContent,
@@ -51,18 +51,20 @@ function Puckwise() {
 	const isWaitingForVisibleResponse =
 		isLoading && visibleMessages.at(-1)?.role === "user";
 
-	if (error && !errorCapturedRef.current) {
-		errorCapturedRef.current = true;
-		posthog.capture("chat_error_displayed", {
-			error_message: error.message,
-			conversation_length: messages.length,
-		});
-		posthog.captureException(error);
-	}
+	useEffect(() => {
+		if (error && !errorCapturedRef.current) {
+			errorCapturedRef.current = true;
+			posthog.capture("chat_error_displayed", {
+				error_message: error.message,
+				conversation_length: messages.length,
+			});
+			posthog.captureException(error);
+		}
 
-	if (!error) {
-		errorCapturedRef.current = false;
-	}
+		if (!error) {
+			errorCapturedRef.current = false;
+		}
+	}, [error, messages.length, posthog]);
 
 	const submitMessage = async (messageText: string) => {
 		const text = messageText.trim();
