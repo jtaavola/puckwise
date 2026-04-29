@@ -9,6 +9,7 @@ if (!posthogToken) {
 }
 
 export const posthogClient = new PostHog(posthogToken ?? "", {
+	host: process.env.VITE_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
 	flushAt: 1,
 	flushInterval: 0,
 });
