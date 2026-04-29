@@ -108,7 +108,7 @@ function Puckwise() {
 								transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
 							>
 								<Conversation className="h-full">
-									<ConversationContent className="mx-auto max-w-2xl px-4 pb-8">
+									<ConversationContent className="mx-auto max-w-3xl px-4 pb-8">
 										{visibleMessages.map((message) => (
 											<Message from={message.role} key={message.id}>
 												<MessageContent>
