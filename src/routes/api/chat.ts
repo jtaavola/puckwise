@@ -35,7 +35,7 @@ function createPuckwiseAgent({
 		instructions: `You are Puckwise, an AI hockey analytics assistant. Answer clearly and concisely.
 
 You have access to live NHL data through two tools:
-- searchNhlPlayers: resolve a player's last name to a list of matching player IDs.
+- searchNhlPlayers: resolve a player's last name, optionally with first name, to a list of matching player IDs.
 - getNhlPlayerLanding: fetch a player's full profile and season-by-season totals.
 
 Use these tools when answering questions about current or historical NHL players, teams, games, stats, scores, standings, schedules, rosters, boxscores, or play-by-play. Do not invent statistics.

@@ -11,9 +11,13 @@ import {
 
 export const searchNhlPlayers = tool({
 	description:
-		"Search for NHL players by last name. Returns a list of matching players with IDs, names, team, and position. Use this when the user mentions a player by name and you need to resolve it to a player ID.",
+		"Search for NHL players by last name, optionally narrowed by first name. Returns a list of matching players with IDs, names, team, and position. Use this when the user mentions a player by name and you need to resolve it to a player ID.",
 	inputSchema: z.object({
 		lastName: z.string().describe("The player's last name (e.g. 'Boldy')"),
+		firstName: z
+			.string()
+			.optional()
+			.describe("The player's first name, if known (e.g. 'Matt')"),
 	}),
 	outputSchema: z.array(
 		z.object({
@@ -26,8 +30,8 @@ export const searchNhlPlayers = tool({
 			sweaterNumber: z.number().optional(),
 		}),
 	),
-	execute: async ({ lastName }): Promise<NhlPlayerSearchResult[]> => {
-		return searchNhlPlayersApi(lastName);
+	execute: async ({ lastName, firstName }): Promise<NhlPlayerSearchResult[]> => {
+		return searchNhlPlayersApi(lastName, firstName);
 	},
 });
 

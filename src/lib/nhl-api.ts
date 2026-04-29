@@ -87,13 +87,21 @@ async function fetchWithTimeout(
 }
 
 /**
- * Search for NHL players by last name.
+ * Search for NHL players by last name, optionally narrowed by first name.
  */
 export async function searchNhlPlayers(
 	lastName: string,
+	firstName?: string,
 ): Promise<NhlPlayerSearchResult[]> {
-	const encodedName = encodeURIComponent(lastName);
-	const url = `${NHLE_STATS_BASE}/players?cayenneExp=lastName=%22${encodedName}%22`;
+	const escapeCayenneValue = (value: string) =>
+		value.replaceAll("\\", "\\\\").replaceAll('"', '\\"');
+	const filters = [`lastName="${escapeCayenneValue(lastName)}"`];
+
+	if (firstName) {
+		filters.push(`firstName="${escapeCayenneValue(firstName)}"`);
+	}
+
+	const url = `${NHLE_STATS_BASE}/players?cayenneExp=${encodeURIComponent(filters.join(" and "))}`;
 
 	const response = await fetchWithTimeout(url);
 	if (!response.ok) {
