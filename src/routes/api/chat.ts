@@ -1,20 +1,7 @@
 import { openrouter } from "@openrouter/ai-sdk-provider";
 import { createFileRoute } from "@tanstack/react-router";
-import { ToolLoopAgent, createAgentUIStreamResponse, safeValidateUIMessages } from "ai";
-import { z } from "zod";
+import { createAgentUIStreamResponse, safeValidateUIMessages, ToolLoopAgent } from "ai";
 import { getNhlPlayerLanding, searchNhlPlayers } from "#/lib/nhl-tools";
-
-const chatRequestSchema = z.looseObject({
-	messages: z
-		.array(
-			z.looseObject({
-				id: z.string(),
-				role: z.enum(["user", "assistant"]),
-				parts: z.array(z.any()),
-			}),
-		)
-		.min(1),
-});
 
 function createPuckwiseAgent() {
 	if (!process.env.LLM_MODEL) {
@@ -53,18 +40,8 @@ export const Route = createFileRoute("/api/chat")({
 	server: {
 		handlers: {
 			POST: async ({ request }) => {
-				let payload: z.infer<typeof chatRequestSchema>;
-
 				try {
-					payload = chatRequestSchema.parse(await request.json());
-				} catch {
-					return Response.json(
-						{ error: "Invalid chat request" },
-						{ status: 400 },
-					);
-				}
-
-				try {
+					const payload = await request.json();
 					const validationResult = await safeValidateUIMessages({
 						messages: payload.messages,
 					});
