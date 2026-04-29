@@ -166,7 +166,7 @@ function Puckwise() {
 								<PromptInputTextarea
 									onChange={(event) => setInputValue(event.currentTarget.value)}
 									placeholder={
-										'Ask about NHL stats... (e.g., "Who has the most goals this season?")'
+										'Ask about NHL stats...'
 									}
 									value={inputValue}
 								/>
