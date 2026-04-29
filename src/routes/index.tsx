@@ -3,7 +3,7 @@ import { usePostHog } from "@posthog/react";
 import { IconArrowNarrowUp } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
 	Conversation,
 	ConversationContent,
@@ -35,11 +35,14 @@ const suggestions = [
 
 function Puckwise() {
 	const posthog = usePostHog();
-	const { error, messages, sendMessage, status } = useChat();
+	const { error, messages, sendMessage, status } = useChat({
+		onError: (error) => {
+			posthog.captureException(error);
+		},
+	});
 	const isLoading = status === "submitted" || status === "streaming";
 	const [inputValue, setInputValue] = useState("");
 	const hasSubmitted = messages.length > 0;
-	const errorCapturedRef = useRef(false);
 	// we aren't displaying thinking tokens, so visible messages are the ones that have text tokens
 	const visibleMessages = messages.filter(
 		(message) =>
@@ -50,21 +53,6 @@ function Puckwise() {
 	);
 	const isWaitingForVisibleResponse =
 		isLoading && visibleMessages.at(-1)?.role === "user";
-
-	useEffect(() => {
-		if (error && !errorCapturedRef.current) {
-			errorCapturedRef.current = true;
-			posthog.capture("chat_error_displayed", {
-				error_message: error.message,
-				conversation_length: messages.length,
-			});
-			posthog.captureException(error);
-		}
-
-		if (!error) {
-			errorCapturedRef.current = false;
-		}
-	}, [error, messages.length, posthog]);
 
 	const submitMessage = async (messageText: string) => {
 		const text = messageText.trim();

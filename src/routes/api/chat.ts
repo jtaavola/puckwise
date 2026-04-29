@@ -103,14 +103,9 @@ export const Route = createFileRoute("/api/chat")({
 				} catch (error) {
 					console.error("Failed to generate chat response", error);
 
-					posthogClient.capture({
-						distinctId,
-						event: "chat_request_failed",
-						properties: {
-							$session_id: sessionId || undefined,
-							error_message:
-								error instanceof Error ? error.message : String(error),
-						},
+					posthogClient.captureException(error, distinctId, {
+						$session_id: sessionId || undefined,
+						source: "api_chat",
 					});
 
 					return Response.json(
