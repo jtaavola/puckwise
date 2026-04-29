@@ -80,14 +80,14 @@ function Puckwise() {
 
 	// TODO: Respect prefers-reduced-motion before shipping; consider MotionConfig or useReducedMotion.
 	return (
-		<main className="h-screen overflow-hidden bg-background py-6 text-foreground sm:py-8">
+		<main className="h-screen overflow-hidden bg-background text-foreground">
 			<motion.div
-				className="mx-auto flex h-full min-h-0 w-full flex-col"
+				className="mx-auto flex h-full min-h-0 w-full flex-col my-16"
 				layout
 				transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
 			>
 				<motion.div
-					className={`flex w-full min-h-0 flex-1 flex-col ${
+					className={`flex w-full min-h-0 flex-1 flex-col pb-4 ${
 						hasSubmitted ? "justify-end" : "justify-center"
 					}`}
 					layout
@@ -120,7 +120,7 @@ function Puckwise() {
 					<AnimatePresence initial={false}>
 						{hasSubmitted && (
 							<motion.div
-								className="min-h-0 w-full flex-1 py-4"
+								className="min-h-0 w-full flex-1 pb-4"
 								exit={{ opacity: 0 }}
 								initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
 								animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
