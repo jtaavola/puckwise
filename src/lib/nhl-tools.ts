@@ -1,4 +1,4 @@
-import { toolDefinition } from "@tanstack/ai";
+import { tool } from "ai";
 import { z } from "zod";
 import {
 	getNhlPlayerLanding as getNhlPlayerLandingApi,
@@ -9,8 +9,7 @@ import {
 
 // ─── Tool 1: Search Players ───────────────────────────────────────────
 
-export const searchNhlPlayersToolDef = toolDefinition({
-	name: "searchNhlPlayers",
+export const searchNhlPlayers = tool({
 	description:
 		"Search for NHL players by last name. Returns a list of matching players with IDs, names, team, and position. Use this when the user mentions a player by name and you need to resolve it to a player ID.",
 	inputSchema: z.object({
@@ -27,18 +26,14 @@ export const searchNhlPlayersToolDef = toolDefinition({
 			sweaterNumber: z.number().optional(),
 		}),
 	),
-});
-
-export const searchNhlPlayers = searchNhlPlayersToolDef.server(
-	async ({ lastName }): Promise<NhlPlayerSearchResult[]> => {
+	execute: async ({ lastName }): Promise<NhlPlayerSearchResult[]> => {
 		return searchNhlPlayersApi(lastName);
 	},
-);
+});
 
 // ─── Tool 2: Get Player Landing ───────────────────────────────────────
 
-export const getNhlPlayerLandingToolDef = toolDefinition({
-	name: "getNhlPlayerLanding",
+export const getNhlPlayerLanding = tool({
 	description:
 		"Fetch an NHL player's full profile and season-by-season statistics from the NHL API. Use this after resolving a player ID to get their career and season totals.",
 	inputSchema: z.object({
@@ -69,10 +64,7 @@ export const getNhlPlayerLandingToolDef = toolDefinition({
 			}),
 		),
 	}),
-});
-
-export const getNhlPlayerLanding = getNhlPlayerLandingToolDef.server(
-	async ({ playerId }): Promise<NhlPlayerLanding> => {
+	execute: async ({ playerId }): Promise<NhlPlayerLanding> => {
 		return getNhlPlayerLandingApi(playerId);
 	},
-);
+});
