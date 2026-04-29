@@ -1,4 +1,5 @@
 import { openrouter } from "@openrouter/ai-sdk-provider";
+import { withTracing } from "@posthog/ai";
 import { createFileRoute } from "@tanstack/react-router";
 import {
 	createAgentUIStreamResponse,
@@ -6,8 +7,15 @@ import {
 	ToolLoopAgent,
 } from "ai";
 import { getNhlPlayerLanding, searchNhlPlayers } from "#/lib/nhl-tools";
+import { posthogClient } from "#/utils/posthog-server";
 
-function createPuckwiseAgent() {
+function createPuckwiseAgent({
+	distinctId,
+	sessionId,
+}: {
+	distinctId: string;
+	sessionId: string | null;
+}) {
 	if (!process.env.LLM_MODEL) {
 		throw new Error("LLM_MODEL environment variable is not set");
 	}
@@ -17,7 +25,13 @@ function createPuckwiseAgent() {
 	}
 
 	return new ToolLoopAgent({
-		model: openrouter(process.env.LLM_MODEL),
+		model: withTracing(openrouter(process.env.LLM_MODEL), posthogClient, {
+			posthogDistinctId: distinctId,
+			posthogProperties: {
+				$ai_span_name: "puckwise-chat",
+				$session_id: sessionId || undefined,
+			},
+		}),
 		instructions: `You are Puckwise, an AI hockey analytics assistant. Answer clearly and concisely.
 
 You have access to live NHL data through two tools:
@@ -44,6 +58,10 @@ export const Route = createFileRoute("/api/chat")({
 	server: {
 		handlers: {
 			POST: async ({ request }) => {
+				const sessionId = request.headers.get("X-PostHog-Session-Id");
+				const distinctId =
+					request.headers.get("X-PostHog-Distinct-Id") || "anonymous";
+
 				let payload: { messages?: unknown };
 
 				try {
@@ -69,12 +87,42 @@ export const Route = createFileRoute("/api/chat")({
 						);
 					}
 
-					return createAgentUIStreamResponse({
-						agent: createPuckwiseAgent(),
+					posthogClient.capture({
+						distinctId,
+						event: "chat_request_received",
+						properties: {
+							$session_id: sessionId || undefined,
+							message_count: validationResult.data.length,
+						},
+					});
+
+					const response = await createAgentUIStreamResponse({
+						agent: createPuckwiseAgent({ distinctId, sessionId }),
 						uiMessages: validationResult.data,
 					});
+
+					posthogClient.capture({
+						distinctId,
+						event: "chat_response_completed",
+						properties: {
+							$session_id: sessionId || undefined,
+							message_count: validationResult.data.length,
+						},
+					});
+
+					return response;
 				} catch (error) {
 					console.error("Failed to generate chat response", error);
+
+					posthogClient.capture({
+						distinctId,
+						event: "chat_request_failed",
+						properties: {
+							$session_id: sessionId || undefined,
+							error_message:
+								error instanceof Error ? error.message : String(error),
+						},
+					});
 
 					return Response.json(
 						{ error: "Failed to generate response" },
