@@ -100,7 +100,6 @@ export const Route = createFileRoute("/api/chat")({
 						agent: createPuckwiseAgent({ distinctId, sessionId }),
 						uiMessages: validationResult.data,
 					});
-
 				} catch (error) {
 					console.error("Failed to generate chat response", error);
 
