@@ -89,7 +89,7 @@ export const Route = createFileRoute("/api/chat")({
 
 					posthogClient.capture({
 						distinctId,
-						event: "chat_request_received",
+						event: "chat_message_received",
 						properties: {
 							$session_id: sessionId || undefined,
 							message_count: validationResult.data.length,

@@ -71,7 +71,7 @@ function Puckwise() {
 			return;
 		}
 
-		posthog.capture("question_submitted", {
+		posthog.capture("chat_message_submitted", {
 			question_length: text.length,
 			conversation_length: messages.length,
 		});
