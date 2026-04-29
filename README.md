@@ -1,5 +1,8 @@
 # Puckwise
 
+> [!IMPORTANT]
+> **Puckwise is in early development.** Expect incomplete features, rough edges, and frequent changes.
+
 Puckwise is an AI hockey analytics chat assistant powered by live NHL data.
 
 ## Development
