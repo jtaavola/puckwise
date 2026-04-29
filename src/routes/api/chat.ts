@@ -96,21 +96,11 @@ export const Route = createFileRoute("/api/chat")({
 						},
 					});
 
-					const response = await createAgentUIStreamResponse({
+					return createAgentUIStreamResponse({
 						agent: createPuckwiseAgent({ distinctId, sessionId }),
 						uiMessages: validationResult.data,
 					});
 
-					posthogClient.capture({
-						distinctId,
-						event: "chat_response_completed",
-						properties: {
-							$session_id: sessionId || undefined,
-							message_count: validationResult.data.length,
-						},
-					});
-
-					return response;
 				} catch (error) {
 					console.error("Failed to generate chat response", error);
 
