@@ -1,51 +1,13 @@
-import {
-	chat,
-	convertMessagesToModelMessages,
-	type ModelMessage,
-	toServerSentEventsResponse,
-} from "@tanstack/ai";
-import { createOpenRouterText } from "@tanstack/ai-openrouter";
+import { openrouter } from "@openrouter/ai-sdk-provider";
 import { createFileRoute } from "@tanstack/react-router";
-import type {
-	OpenRouterTextAdapter,
-	OpenRouterTextModels,
-} from "node_modules/@tanstack/ai-openrouter/dist/esm/adapters/text";
-import { z } from "zod";
+import {
+	createAgentUIStreamResponse,
+	safeValidateUIMessages,
+	ToolLoopAgent,
+} from "ai";
 import { getNhlPlayerLanding, searchNhlPlayers } from "#/lib/nhl-tools";
 
-type TextOnlyModelMessage = ModelMessage<string | null>;
-
-const chatRequestSchema = z.looseObject({
-	messages: z
-		.array(
-			z.looseObject({
-				id: z.string(),
-				role: z.enum(["user", "assistant"]),
-				parts: z.array(z.any()),
-			}),
-		)
-		.min(1),
-});
-
-function isTextOnlyModelMessage(
-	message: ModelMessage,
-): message is TextOnlyModelMessage {
-	return typeof message.content === "string" || message.content === null;
-}
-
-function convertMessagesToTextOnlyModelMessages(
-	messages: z.infer<typeof chatRequestSchema>["messages"],
-): Array<TextOnlyModelMessage> | null {
-	const modelMessages = convertMessagesToModelMessages(messages);
-
-	if (!modelMessages.every(isTextOnlyModelMessage)) {
-		return null;
-	}
-
-	return modelMessages;
-}
-
-function createChatAdapter() {
+function createPuckwiseAgent() {
 	if (!process.env.LLM_MODEL) {
 		throw new Error("LLM_MODEL environment variable is not set");
 	}
@@ -54,45 +16,9 @@ function createChatAdapter() {
 		throw new Error("OPENROUTER_API_KEY environment variable is not set");
 	}
 
-	return createOpenRouterText(
-		process.env.LLM_MODEL as OpenRouterTextModels,
-		process.env.OPENROUTER_API_KEY,
-	);
-}
-
-export const Route = createFileRoute("/api/chat")({
-	server: {
-		handlers: {
-			POST: async ({ request }) => {
-				let payload: z.infer<typeof chatRequestSchema>;
-
-				try {
-					payload = chatRequestSchema.parse(await request.json());
-				} catch {
-					return Response.json(
-						{ error: "Invalid chat request" },
-						{ status: 400 },
-					);
-				}
-
-				try {
-					const messages = convertMessagesToTextOnlyModelMessages(
-						payload.messages,
-					);
-
-					if (!messages) {
-						return Response.json(
-							{ error: "Invalid chat request" },
-							{ status: 400 },
-						);
-					}
-
-					const stream = chat({
-						adapter: createChatAdapter(),
-						messages,
-						tools: [searchNhlPlayers, getNhlPlayerLanding],
-						systemPrompts: [
-							`You are Puckwise, an AI hockey analytics assistant. Answer clearly and concisely.
+	return new ToolLoopAgent({
+		model: openrouter(process.env.LLM_MODEL),
+		instructions: `You are Puckwise, an AI hockey analytics assistant. Answer clearly and concisely.
 
 You have access to live NHL data through two tools:
 - searchNhlPlayers: resolve a player's last name to a list of matching player IDs.
@@ -107,10 +33,46 @@ Rules for interpreting stats:
 - If a player's name is ambiguous (multiple matches from searchNhlPlayers), ask a clarifying question instead of guessing.
 - If no player matches, tell the user no matching NHL player was found and ask for more detail.
 - Ignore non-NHL rows unless the user explicitly asks about junior, international, AHL, or other leagues.`,
-						],
+		tools: {
+			searchNhlPlayers,
+			getNhlPlayerLanding,
+		},
+	});
+}
+
+export const Route = createFileRoute("/api/chat")({
+	server: {
+		handlers: {
+			POST: async ({ request }) => {
+				let payload: { messages?: unknown };
+
+				try {
+					payload = await request.json();
+				} catch (error) {
+					console.error("Failed to parse chat request", error);
+
+					return Response.json(
+						{ error: "Malformed chat request" },
+						{ status: 400 },
+					);
+				}
+
+				try {
+					const validationResult = await safeValidateUIMessages({
+						messages: payload.messages,
 					});
 
-					return toServerSentEventsResponse(stream);
+					if (!validationResult.success) {
+						return Response.json(
+							{ error: "Invalid chat request" },
+							{ status: 400 },
+						);
+					}
+
+					return createAgentUIStreamResponse({
+						agent: createPuckwiseAgent(),
+						uiMessages: validationResult.data,
+					});
 				} catch (error) {
 					console.error("Failed to generate chat response", error);
 

@@ -1,6 +1,5 @@
+import { useChat } from "@ai-sdk/react";
 import { IconArrowNarrowUp } from "@tabler/icons-react";
-import { fetchServerSentEvents } from "@tanstack/ai-client";
-import { useChat } from "@tanstack/ai-react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
@@ -34,9 +33,8 @@ const suggestions = [
 ];
 
 function Puckwise() {
-	const { error, isLoading, messages, sendMessage } = useChat({
-		connection: fetchServerSentEvents("/api/chat"),
-	});
+	const { error, messages, sendMessage, status } = useChat();
+	const isLoading = status === "submitted" || status === "streaming";
 	const [inputValue, setInputValue] = useState("");
 	const hasSubmitted = messages.length > 0;
 	// we aren't displaying thinking tokens, so visible messages are the ones that have text tokens
@@ -44,7 +42,7 @@ function Puckwise() {
 		(message) =>
 			message.role !== "assistant" ||
 			message.parts.some(
-				(part) => part.type === "text" && part.content.trim().length > 0,
+				(part) => part.type === "text" && part.text.trim().length > 0,
 			),
 	);
 	const isWaitingForVisibleResponse =
@@ -58,7 +56,7 @@ function Puckwise() {
 		}
 
 		setInputValue("");
-		await sendMessage(text);
+		sendMessage({ text });
 	};
 
 	// TODO: Respect prefers-reduced-motion before shipping; consider MotionConfig or useReducedMotion.
@@ -119,7 +117,7 @@ function Puckwise() {
 															return (
 																// biome-ignore lint/suspicious/noArrayIndexKey: yolo
 																<MessageResponse key={idx}>
-																	{part.content}
+																	{part.text}
 																</MessageResponse>
 															);
 														}
