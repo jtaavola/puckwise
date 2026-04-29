@@ -24,7 +24,6 @@ import {
 } from "#/components/ai-elements/prompt-input";
 import { Shimmer } from "#/components/ai-elements/shimmer";
 import { Suggestion, Suggestions } from "#/components/ai-elements/suggestion";
-import { PuckwiseChart } from "#/components/puckwise-chart";
 import { PuckwiseMessageParts } from "#/components/puckwise-message-parts";
 
 export const Route = createFileRoute("/")({ component: Puckwise });
@@ -165,12 +164,6 @@ function Puckwise() {
 							</motion.div>
 						)}
 					</AnimatePresence>
-
-					{!hasSubmitted && (
-						<div className="mx-auto mb-6 w-full max-w-3xl px-4">
-							<PuckwiseChart spec={null} />
-						</div>
-					)}
 
 					<motion.div
 						className="mx-auto w-full max-w-2xl shrink-0 px-4"
