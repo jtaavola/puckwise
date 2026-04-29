@@ -1,11 +1,19 @@
 import { openrouter } from "@openrouter/ai-sdk-provider";
 import { createFileRoute } from "@tanstack/react-router";
-import { ToolLoopAgent, createAgentUIStreamResponse, type UIMessage } from "ai";
+import { ToolLoopAgent, createAgentUIStreamResponse, safeValidateUIMessages } from "ai";
 import { z } from "zod";
 import { getNhlPlayerLanding, searchNhlPlayers } from "#/lib/nhl-tools";
 
 const chatRequestSchema = z.looseObject({
-	messages: z.array(z.custom<UIMessage>()).min(1),
+	messages: z
+		.array(
+			z.looseObject({
+				id: z.string(),
+				role: z.enum(["user", "assistant"]),
+				parts: z.array(z.any()),
+			}),
+		)
+		.min(1),
 });
 
 function createPuckwiseAgent() {
@@ -57,9 +65,20 @@ export const Route = createFileRoute("/api/chat")({
 				}
 
 				try {
+					const validationResult = await safeValidateUIMessages({
+						messages: payload.messages,
+					});
+
+					if (!validationResult.success) {
+						return Response.json(
+							{ error: "Invalid chat request" },
+							{ status: 400 },
+						);
+					}
+
 					return createAgentUIStreamResponse({
 						agent: createPuckwiseAgent(),
-						uiMessages: payload.messages,
+						uiMessages: validationResult.data,
 					});
 				} catch (error) {
 					console.error("Failed to generate chat response", error);
