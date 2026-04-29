@@ -1,4 +1,5 @@
 import { useChat } from "@ai-sdk/react";
+import { SPEC_DATA_PART_TYPE } from "@json-render/core";
 import { usePostHog } from "@posthog/react";
 import { IconArrowNarrowUp } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
@@ -23,6 +24,7 @@ import {
 } from "#/components/ai-elements/prompt-input";
 import { Shimmer } from "#/components/ai-elements/shimmer";
 import { Suggestion, Suggestions } from "#/components/ai-elements/suggestion";
+import { PuckwiseMessageParts } from "#/components/puckwise-message-parts";
 
 export const Route = createFileRoute("/")({ component: Puckwise });
 
@@ -43,12 +45,14 @@ function Puckwise() {
 	const isLoading = status === "submitted" || status === "streaming";
 	const [inputValue, setInputValue] = useState("");
 	const hasSubmitted = messages.length > 0;
-	// we aren't displaying thinking tokens, so visible messages are the ones that have text tokens
+	// We aren't displaying thinking tokens, so visible assistant messages need text or chart data.
 	const visibleMessages = messages.filter(
 		(message) =>
 			message.role !== "assistant" ||
 			message.parts.some(
-				(part) => part.type === "text" && part.text.trim().length > 0,
+				(part) =>
+					(part.type === "text" && part.text.trim().length > 0) ||
+					part.type === SPEC_DATA_PART_TYPE,
 			),
 	);
 	const isWaitingForVisibleResponse =
@@ -131,17 +135,7 @@ function Puckwise() {
 										{visibleMessages.map((message) => (
 											<Message from={message.role} key={message.id}>
 												<MessageContent>
-													{message.parts.map((part, idx) => {
-														if (part.type === "text") {
-															return (
-																// biome-ignore lint/suspicious/noArrayIndexKey: yolo
-																<MessageResponse key={idx}>
-																	{part.text}
-																</MessageResponse>
-															);
-														}
-														return null;
-													})}
+													<PuckwiseMessageParts parts={message.parts} />
 												</MessageContent>
 											</Message>
 										))}
