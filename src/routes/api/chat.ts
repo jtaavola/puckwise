@@ -1,6 +1,10 @@
 import { openrouter } from "@openrouter/ai-sdk-provider";
 import { createFileRoute } from "@tanstack/react-router";
-import { createAgentUIStreamResponse, safeValidateUIMessages, ToolLoopAgent } from "ai";
+import {
+	createAgentUIStreamResponse,
+	safeValidateUIMessages,
+	ToolLoopAgent,
+} from "ai";
 import { getNhlPlayerLanding, searchNhlPlayers } from "#/lib/nhl-tools";
 
 function createPuckwiseAgent() {
@@ -40,8 +44,20 @@ export const Route = createFileRoute("/api/chat")({
 	server: {
 		handlers: {
 			POST: async ({ request }) => {
+				let payload: { messages?: unknown };
+
 				try {
-					const payload = await request.json();
+					payload = await request.json();
+				} catch (error) {
+					console.error("Failed to parse chat request", error);
+
+					return Response.json(
+						{ error: "Malformed chat request" },
+						{ status: 400 },
+					);
+				}
+
+				try {
 					const validationResult = await safeValidateUIMessages({
 						messages: payload.messages,
 					});

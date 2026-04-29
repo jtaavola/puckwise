@@ -1,5 +1,5 @@
-import { IconArrowNarrowUp } from "@tabler/icons-react";
 import { useChat } from "@ai-sdk/react";
+import { IconArrowNarrowUp } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
