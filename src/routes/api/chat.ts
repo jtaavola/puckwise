@@ -1,11 +1,14 @@
+import { pipeJsonRender } from "@json-render/core";
 import { openrouter } from "@openrouter/ai-sdk-provider";
 import { withTracing } from "@posthog/ai";
 import { createFileRoute } from "@tanstack/react-router";
 import {
-	createAgentUIStreamResponse,
+	createAgentUIStream,
+	createUIMessageStreamResponse,
 	safeValidateUIMessages,
 	ToolLoopAgent,
 } from "ai";
+import { chartPrompt } from "#/lib/chart-catalog";
 import { getNhlPlayerLanding, searchNhlPlayers } from "#/lib/nhl-tools";
 import { posthogClient } from "#/utils/posthog-server";
 
@@ -33,6 +36,10 @@ function createPuckwiseAgent({
 			},
 		}),
 		instructions: `You are Puckwise, an AI hockey analytics assistant. Answer clearly and concisely.
+
+You can include charts in answers using JSON Render specs. Use charts when they clarify comparisons, rankings, trends, or season-by-season data. If a user explicitly asks to show, plot, graph, or chart season-by-season data, the final answer must include a chart spec; do not merely promise to create one.
+
+${chartPrompt}
 
 You have access to live NHL data through two tools:
 - searchNhlPlayers: resolve a player's last name, optionally with first name, to a list of matching player IDs.
@@ -96,9 +103,13 @@ export const Route = createFileRoute("/api/chat")({
 						},
 					});
 
-					return createAgentUIStreamResponse({
-						agent: createPuckwiseAgent({ distinctId, sessionId }),
-						uiMessages: validationResult.data,
+					return createUIMessageStreamResponse({
+						stream: pipeJsonRender(
+							await createAgentUIStream({
+								agent: createPuckwiseAgent({ distinctId, sessionId }),
+								uiMessages: validationResult.data,
+							}),
+						),
 					});
 				} catch (error) {
 					console.error("Failed to generate chat response", error);
