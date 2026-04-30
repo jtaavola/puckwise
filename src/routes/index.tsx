@@ -29,10 +29,9 @@ import { PuckwiseMessageParts } from "#/components/puckwise-message-parts";
 export const Route = createFileRoute("/")({ component: Puckwise });
 
 const suggestions = [
-	"Who leads the league in goals this season?",
-	"Show me the current standings",
-	"Who has the most 5-on-5 goals in the last 3 years?",
-	"Who leads in assists this season?",
+	"Compare Quinn Hughes points per game for VAN and for MN this year",
+	"Show Boldy and Kaprizov goals over last 5 years",
+	"How many career games does Spurgeon have?"
 ];
 
 function Puckwise() {
