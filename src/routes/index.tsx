@@ -84,9 +84,17 @@ function Puckwise() {
 
 	// TODO: Respect prefers-reduced-motion before shipping; consider MotionConfig or useReducedMotion.
 	return (
-		<main className="h-dvh overflow-hidden bg-background pt-16 text-foreground">
+		<main
+			className={`bg-background pt-16 text-foreground ${
+				hasSubmitted
+					? "h-dvh overflow-hidden"
+					: "min-h-dvh overflow-x-hidden overflow-y-auto"
+			}`}
+		>
 			<motion.div
-				className="mx-auto flex h-full min-h-0 w-full flex-col"
+				className={`mx-auto flex min-h-0 w-full flex-col ${
+					hasSubmitted ? "h-full" : "min-h-[calc(100dvh-4rem)]"
+				}`}
 				layout
 				transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
 			>
