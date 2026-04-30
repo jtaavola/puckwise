@@ -31,7 +31,8 @@ export const Route = createFileRoute("/")({ component: Puckwise });
 const suggestions = [
 	"Compare Quinn Hughes points per game for VAN and for MN this year",
 	"Show Boldy and Kaprizov goals over last 5 years",
-	"How many career games does Spurgeon have?"
+	"How many career games does Spurgeon have?",
+	"Compare Connor McDavid and Nathan MacKinnon points this season",
 ];
 
 function Puckwise() {
