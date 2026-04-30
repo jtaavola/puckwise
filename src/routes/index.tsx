@@ -45,18 +45,18 @@ function Puckwise() {
 	const isLoading = status === "submitted" || status === "streaming";
 	const [inputValue, setInputValue] = useState("");
 	const hasSubmitted = messages.length > 0;
-	// We aren't displaying thinking tokens, so visible assistant messages need text or chart data.
+	// We aren't displaying thinking tokens, so visible assistant messages need user-facing content.
 	const visibleMessages = messages.filter(
 		(message) =>
 			message.role !== "assistant" ||
 			message.parts.some(
 				(part) =>
-					(part.type === "text" && part.text.trim().length > 0) ||
-					part.type === SPEC_DATA_PART_TYPE,
-			),
+					hasCompleteAssistantPart(part) ||
+					part.type === "dynamic-tool" ||
+					part.type.startsWith("tool-"),
+				),
 	);
-	const isWaitingForVisibleResponse =
-		isLoading && visibleMessages.at(-1)?.role === "user";
+	const isWaitingForVisibleResponse = isLoading;
 
 	const submitMessage = async (messageText: string) => {
 		const text = messageText.trim();
@@ -236,5 +236,12 @@ function Puckwise() {
 				</motion.div>
 			</motion.div>
 		</main>
+	);
+}
+
+function hasCompleteAssistantPart(part: { type: string; text?: string }) {
+	return (
+		(part.type === "text" && part.text?.trim().length > 0) ||
+		part.type === SPEC_DATA_PART_TYPE
 	);
 }
