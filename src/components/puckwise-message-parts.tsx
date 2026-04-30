@@ -66,7 +66,9 @@ export function PuckwiseMessageParts({
 		}
 
 		if (isToolPart(part)) {
-			flushSpec();
+			if (hasPendingSpec && isRenderableSpec(pendingSpec)) {
+				flushSpec();
+			}
 
 			renderedParts.push(
 				<ToolIndicator
