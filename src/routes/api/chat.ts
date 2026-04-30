@@ -27,6 +27,13 @@ function createPuckwiseAgent({
 		throw new Error("OPENROUTER_API_KEY environment variable is not set");
 	}
 
+	const today = new Intl.DateTimeFormat("en-CA", {
+		timeZone: "America/New_York",
+		year: "numeric",
+		month: "2-digit",
+		day: "2-digit",
+	}).format(new Date());
+
 	return new ToolLoopAgent({
 		model: withTracing(openrouter(process.env.LLM_MODEL), posthogClient, {
 			posthogDistinctId: distinctId,
@@ -36,6 +43,8 @@ function createPuckwiseAgent({
 			},
 		}),
 		instructions: `You are Puckwise, an AI hockey analytics assistant. Answer clearly and concisely.
+
+Today's date is ${today}.
 
 You can include charts in answers using JSON Render specs. Use charts when they clarify comparisons, rankings, trends, or season-by-season data. If a user explicitly asks to show, plot, graph, or chart season-by-season data, the final answer must include a chart spec; do not merely promise to create one.
 
