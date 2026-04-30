@@ -83,7 +83,7 @@ function Puckwise() {
 
 	// TODO: Respect prefers-reduced-motion before shipping; consider MotionConfig or useReducedMotion.
 	return (
-		<main className="h-screen overflow-hidden bg-background text-foreground pb-16">
+		<main className="h-screen overflow-hidden bg-background text-foreground pb-20">
 			<motion.div
 				className="mx-auto flex h-full min-h-0 w-full flex-col my-16"
 				layout
