@@ -5,6 +5,10 @@
 
 Puckwise is an AI hockey analytics chat assistant powered by live NHL data.
 
+## Demo
+
+https://github.com/user-attachments/assets/18e9fa13-d7f9-4c10-8310-a43886941d00
+
 ## Development
 
 ### Requirements
