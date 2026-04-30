@@ -193,7 +193,7 @@ function Puckwise() {
 					<AnimatePresence initial={false} mode="popLayout">
 						{!hasSubmitted && (
 							<motion.div
-								className="mx-auto w-full max-w-2xl px-4"
+								className="mx-auto w-full max-w-4xl px-4"
 								exit={{ opacity: 0, y: 26, filter: "blur(8px)" }}
 								initial={{ opacity: 1, y: 0, filter: "blur(0px)" }}
 								transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
