@@ -20,6 +20,8 @@ import {
 import {
 	type ChartConfig,
 	ChartContainer,
+	ChartLegend,
+	ChartLegendContent,
 	ChartTooltip,
 	ChartTooltipContent,
 } from "#/components/ui/chart";
@@ -51,9 +53,14 @@ type ChartProps = {
 	data: ChartPoint[];
 };
 
-type NormalizedChartPoint = {
+type NormalizedSeries = {
+	key: string;
 	label: string;
-	value: number;
+};
+
+type NormalizedChartData = {
+	points: Array<Record<string, number | string>>;
+	series: NormalizedSeries[];
 };
 
 const chartMargin = {
@@ -87,13 +94,16 @@ function ShadcnChart({
 }: ChartProps) {
 	const chartTitle = title?.trim() || "Chart";
 	const chartType = type === "line" ? "line" : "bar";
-	const chartData = normalizeChartData(data);
-	const chartConfig = {
-		value: {
-			label: yAxisLabel || "Value",
-			color: "var(--chart-1)",
-		},
-	} satisfies ChartConfig;
+	const { points: chartData, series } = normalizeChartData(data, yAxisLabel);
+	const chartConfig = Object.fromEntries(
+		series.map((item, index) => [
+			item.key,
+			{
+				label: item.label,
+				color: `var(--chart-${(index % 5) + 1})`,
+			},
+		]),
+	) satisfies ChartConfig;
 
 	return (
 		<Card className="my-4">
@@ -126,7 +136,17 @@ function ShadcnChart({
 									content={<ChartTooltipContent indicator="dashed" />}
 									cursor={false}
 								/>
-								<Bar dataKey="value" fill="var(--color-value)" radius={6} />
+								{series.map((item) => (
+									<Bar
+										dataKey={item.key}
+										fill={`var(--color-${item.key})`}
+										key={item.key}
+										radius={6}
+									/>
+								))}
+								{series.length > 1 && (
+									<ChartLegend content={<ChartLegendContent />} />
+								)}
 							</BarChart>
 						) : (
 							<LineChart
@@ -141,13 +161,19 @@ function ShadcnChart({
 									content={<ChartTooltipContent indicator="line" />}
 									cursor={false}
 								/>
-								<Line
-									dataKey="value"
-									dot={{ fill: "var(--color-value)" }}
-									stroke="var(--color-value)"
-									strokeWidth={2}
-									type="monotone"
-								/>
+								{series.map((item) => (
+									<Line
+										dataKey={item.key}
+										dot={{ fill: `var(--color-${item.key})` }}
+										key={item.key}
+										stroke={`var(--color-${item.key})`}
+										strokeWidth={2}
+										type="monotone"
+									/>
+								))}
+								{series.length > 1 && (
+									<ChartLegend content={<ChartLegendContent />} />
+								)}
 							</LineChart>
 						)}
 					</ChartContainer>
@@ -191,29 +217,49 @@ function ChartYAxis({ label }: { label?: string }) {
 	);
 }
 
-function normalizeChartData(data: ChartPoint[]): NormalizedChartPoint[] {
+function normalizeChartData(
+	data: ChartPoint[],
+	defaultSeriesLabel = "Value",
+): NormalizedChartData {
 	if (!Array.isArray(data)) {
-		return [];
+		return { points: [], series: [] };
 	}
 
-	return data.flatMap((point, index) => {
+	const seriesByName = new Map<string, NormalizedSeries>();
+	const pointsByLabel = new Map<string, Record<string, number | string>>();
+
+	data.forEach((point, index) => {
 		if (!point || typeof point !== "object") {
-			return [];
+			return;
 		}
 
 		const value = Number(point.value);
 
 		if (!Number.isFinite(value)) {
-			return [];
+			return;
 		}
 
-		return [
-			{
-				label: String(point.label || `#${index + 1}`),
-				value,
-			},
-		];
+		const label = String(point.label || `#${index + 1}`);
+		const seriesLabel = String(point.series || defaultSeriesLabel || "Value");
+		let series = seriesByName.get(seriesLabel);
+
+		if (!series) {
+			series = {
+				key: `series${seriesByName.size + 1}`,
+				label: seriesLabel,
+			};
+			seriesByName.set(seriesLabel, series);
+		}
+
+		const chartPoint = pointsByLabel.get(label) ?? { label };
+		chartPoint[series.key] = value;
+		pointsByLabel.set(label, chartPoint);
 	});
+
+	return {
+		points: [...pointsByLabel.values()],
+		series: [...seriesByName.values()],
+	};
 }
 
 function formatLabel(value: string) {

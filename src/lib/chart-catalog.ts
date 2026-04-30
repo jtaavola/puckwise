@@ -36,6 +36,7 @@ export const chartPrompt = chartCatalog.prompt({
 		"Only chart facts you have verified with tools or that are directly available in the conversation. Do not invent values.",
 		'Build this flat spec shape with patches: {"root":"chart","elements":{"chart":{"type":"Chart","props":{...},"children":[]}}}.',
 		"Keep charts focused: 3-12 data points is ideal. Use short labels.",
-		'Example spec block:\n```spec\n{"op":"add","path":"/root","value":"chart"}\n{"op":"add","path":"/elements","value":{}}\n{"op":"add","path":"/elements/chart","value":{"type":"Chart","props":{"title":"Goals by season","type":"bar","data":[{"label":"2022-23","value":40}]},"children":[]}}\n```',
+		"For multi-player or multi-category comparisons over time, use one data point per label/series pair, e.g. the same season label repeated with different series names. The renderer will draw one line/bar per series.",
+		'Example spec block:\n```spec\n{"op":"add","path":"/root","value":"chart"}\n{"op":"add","path":"/elements","value":{}}\n{"op":"add","path":"/elements/chart","value":{"type":"Chart","props":{"title":"Goals by season","type":"line","yAxisLabel":"Goals","data":[{"label":"2022-23","series":"Player X","value":40},{"label":"2022-23","series":"Player Y","value":32}]},"children":[]}}\n```',
 	],
 });
