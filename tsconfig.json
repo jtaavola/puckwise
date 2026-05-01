@@ -7,6 +7,7 @@
     "module": "ESNext",
     "baseUrl": ".",
     "paths": {
+      "@puckwise/nhl-api": ["./packages/nhl-api/src/index.ts"],
       "#/*": ["./src/*"],
       "@/*": ["./src/*"]
     },
