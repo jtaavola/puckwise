@@ -1,4 +1,5 @@
 import type { NhlApiClient } from "../client.js";
+import { NhlApiError } from "../errors.js";
 import { cayenneAnd, cayenneEq, type QueryParams } from "../http.js";
 import { seasonIdSchema } from "../schemas/common.js";
 import {
@@ -232,7 +233,19 @@ function statsPath(lang: StatsApiLanguage | undefined, path: string): string {
 		return path;
 	}
 
-	return `/../${lang}${path}`;
+	const encodedLang = encodeStatsApiLanguage(lang);
+	return `/../${encodedLang}${path}`;
+}
+
+function encodeStatsApiLanguage(lang: StatsApiLanguage): string {
+	if (!/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(lang)) {
+		throw new NhlApiError({
+			code: "VALIDATION_ERROR",
+			message: `Invalid Stats API language "${lang}"`,
+		});
+	}
+
+	return encodeURIComponent(lang);
 }
 
 function buildStatsQuery(

@@ -180,4 +180,17 @@ describe("players domain client", () => {
 		);
 		expect(requests[4]?.searchParams.get("limit")).toBe("5");
 	});
+
+	it("rejects Stats API languages that would alter the endpoint path", () => {
+		const client = createNhlApiClient({
+			fetch: vi.fn(async () => jsonResponse(statsPlayerInfoFixture)),
+		});
+
+		expect(() => client.players.getInfo(8478402, { lang: "../fr" })).toThrow(
+			/Invalid Stats API language/,
+		);
+		expect(() => client.players.getInfo(8478402, { lang: "fr/players" })).toThrow(
+			/Invalid Stats API language/,
+		);
+	});
 });
