@@ -186,4 +186,24 @@ describe("NHL API client foundation", () => {
 			code: "ABORTED",
 		});
 	});
+
+	it("removes caller abort listeners after requests complete", async () => {
+		const controller = new AbortController();
+		const addListener = vi.spyOn(controller.signal, "addEventListener");
+		const removeListener = vi.spyOn(controller.signal, "removeEventListener");
+		const client = createNhlApiClient({
+			fetch: async () => jsonResponse({ ok: true }),
+		});
+
+		await client.web("/complete", {
+			schema: okSchema,
+			signal: controller.signal,
+		});
+
+		const abortListener = addListener.mock.calls.find(
+			([eventName]) => eventName === "abort",
+		)?.[1];
+		expect(abortListener).toBeTypeOf("function");
+		expect(removeListener).toHaveBeenCalledWith("abort", abortListener);
+	});
 });

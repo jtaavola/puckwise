@@ -124,14 +124,14 @@ export async function requestJson(
 		() => timeoutController.abort(),
 		options.timeoutMs,
 	);
-	const signal = combineSignals(timeoutController.signal, options.signal);
+	const combinedSignal = combineSignals(timeoutController.signal, options.signal);
 
 	try {
 		const response = await options.fetch(options.url, {
 			body: options.body,
 			headers: options.headers,
 			method,
-			signal,
+			signal: combinedSignal.signal,
 		});
 		const responseText = await response.text();
 
@@ -183,6 +183,7 @@ export async function requestJson(
 			url: options.url.toString(),
 		});
 	} finally {
+		combinedSignal.cleanup();
 		clearTimeout(timeoutId);
 	}
 }
@@ -198,9 +199,9 @@ function serializeQueryPrimitive(value: QueryPrimitive): string {
 function combineSignals(
 	timeoutSignal: AbortSignal,
 	userSignal?: AbortSignal,
-): AbortSignal {
+): { signal: AbortSignal; cleanup: () => void } {
 	if (!userSignal) {
-		return timeoutSignal;
+		return { cleanup: () => {}, signal: timeoutSignal };
 	}
 
 	const controller = new AbortController();
@@ -208,12 +209,18 @@ function combineSignals(
 
 	if (timeoutSignal.aborted || userSignal.aborted) {
 		abort();
-		return controller.signal;
+		return { cleanup: () => {}, signal: controller.signal };
 	}
 
 	timeoutSignal.addEventListener("abort", abort, { once: true });
 	userSignal.addEventListener("abort", abort, { once: true });
-	return controller.signal;
+	return {
+		cleanup: () => {
+			timeoutSignal.removeEventListener("abort", abort);
+			userSignal.removeEventListener("abort", abort);
+		},
+		signal: controller.signal,
+	};
 }
 
 function isAbortError(error: unknown): boolean {
