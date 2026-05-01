@@ -1,4 +1,5 @@
 import type { z } from "zod";
+import { createPlayersDomain, type PlayersDomain } from "./domains/players.js";
 import {
 	buildUrl,
 	DEFAULT_TIMEOUT_MS,
@@ -35,6 +36,7 @@ export type NhlApiRequestOptions<TSchema extends z.ZodType> = {
 export class NhlApiClient {
 	readonly baseUrls: Record<NhlApiHost, string>;
 	readonly defaultHeaders: HeadersInit;
+	readonly players: PlayersDomain;
 	readonly timeoutMs: number;
 
 	readonly #fetch: NhlFetch;
@@ -47,6 +49,7 @@ export class NhlApiClient {
 		};
 		this.defaultHeaders = options.headers ?? {};
 		this.timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
+		this.players = createPlayersDomain(this);
 	}
 
 	async request<TSchema extends z.ZodType>(
