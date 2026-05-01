@@ -26,6 +26,7 @@
     "@openrouter/ai-sdk-provider": "^2.9.0",
     "@posthog/ai": "^7.16.15",
     "@posthog/react": "^1.9.0",
+    "@puckwise/nhl-api": "file:packages/nhl-api",
     "@radix-ui/react-use-controllable-state": "^1.2.2",
     "@rive-app/react-webgl2": "^4.28.1",
     "@streamdown/cjk": "^1.0.3",

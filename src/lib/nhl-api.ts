@@ -1,8 +1,10 @@
-// NHL API helper functions
+import {
+	createNhlApiClient,
+	type PlayerLanding,
+	type StatsPlayerInfo,
+} from "@puckwise/nhl-api";
 
-const NHLE_STATS_BASE = "https://api.nhle.com/stats/rest/en";
-const NHLE_WEB_BASE = "https://api-web.nhle.com/v1";
-const FETCH_TIMEOUT_MS = 10_000;
+const nhlApi = createNhlApiClient();
 
 export type NhlPlayerSearchResult = {
 	id: number;
@@ -14,33 +16,18 @@ export type NhlPlayerSearchResult = {
 	sweaterNumber?: number;
 };
 
-export type NhlSeasonTotal = {
-	assists: number;
-	avgToi?: string;
-	faceoffWinningPctg?: number;
-	gameTypeId: number;
-	gameWinningGoals?: number;
-	gamesPlayed: number;
-	goals: number;
-	leagueAbbrev: string;
-	otGoals?: number;
-	pim?: number;
-	plusMinus?: number;
-	points: number;
-	powerPlayGoals?: number;
-	powerPlayPoints?: number;
-	season: number;
-	sequence: number;
-	shootingPctg?: number;
-	shorthandedGoals?: number;
-	shorthandedPoints?: number;
-	shots?: number;
-	teamCommonName?: { default?: string };
-	teamName?: { default?: string; fr?: string };
-	teamPlaceNameWithPreposition?: { default?: string; fr?: string };
-};
+export type NhlSeasonTotal = NonNullable<PlayerLanding["seasonTotals"]>[number];
 
-export type NhlPlayerLanding = {
+export type NhlPlayerLanding = Omit<
+	PlayerLanding,
+	| "firstName"
+	| "fullTeamName"
+	| "isActive"
+	| "lastName"
+	| "playerId"
+	| "seasonTotals"
+	| "sweaterNumber"
+> & {
 	playerId: number;
 	isActive: boolean;
 	currentTeamId?: number;
@@ -55,37 +42,6 @@ export type NhlPlayerLanding = {
 	seasonTotals: NhlSeasonTotal[];
 };
 
-type StatsApiResponse = {
-	data: Array<{
-		id: number;
-		fullName: string;
-		firstName: string;
-		lastName: string;
-		currentTeamId?: number | null;
-		positionCode?: string;
-		sweaterNumber?: number | null;
-	}>;
-	total: number;
-};
-
-async function fetchWithTimeout(
-	url: string,
-	options?: RequestInit,
-	timeoutMs = FETCH_TIMEOUT_MS,
-): Promise<Response> {
-	const controller = new AbortController();
-	const id = setTimeout(() => controller.abort(), timeoutMs);
-	try {
-		const response = await fetch(url, {
-			...options,
-			signal: controller.signal,
-		});
-		return response;
-	} finally {
-		clearTimeout(id);
-	}
-}
-
 /**
  * Search for NHL players by last name, optionally narrowed by first name.
  */
@@ -93,33 +49,18 @@ export async function searchNhlPlayers(
 	lastName: string,
 	firstName?: string,
 ): Promise<NhlPlayerSearchResult[]> {
-	const escapeCayenneValue = (value: string) =>
-		value.replaceAll("\\", "\\\\").replaceAll('"', '\\"');
-	const filters = [`lastName="${escapeCayenneValue(lastName)}"`];
+	const response = await nhlApi.players.search({ firstName, lastName });
 
-	if (firstName) {
-		filters.push(`firstName="${escapeCayenneValue(firstName)}"`);
-	}
-
-	const url = `${NHLE_STATS_BASE}/players?cayenneExp=${encodeURIComponent(filters.join(" and "))}`;
-
-	const response = await fetchWithTimeout(url);
-	if (!response.ok) {
-		throw new Error(
-			`NHL stats API error: ${response.status} ${response.statusText}`,
-		);
-	}
-
-	const json = (await response.json()) as StatsApiResponse;
-
-	return (json.data || []).map((player) => ({
-		id: player.id,
-		fullName: player.fullName,
-		firstName: player.firstName,
-		lastName: player.lastName,
+	return response.data.map((player) => ({
+		id: player.playerId,
+		fullName:
+			player.fullName ??
+			[player.firstName, player.lastName].filter(Boolean).join(" "),
+		firstName: player.firstName ?? "",
+		lastName: player.lastName ?? "",
 		currentTeamId: player.currentTeamId ?? undefined,
 		positionCode: player.positionCode,
-		sweaterNumber: player.sweaterNumber ?? undefined,
+		sweaterNumber: getSweaterNumber(player),
 	}));
 }
 
@@ -129,17 +70,46 @@ export async function searchNhlPlayers(
 export async function getNhlPlayerLanding(
 	playerId: number,
 ): Promise<NhlPlayerLanding> {
-	const url = `${NHLE_WEB_BASE}/player/${playerId}/landing`;
+	const landing = await nhlApi.players.getLanding(playerId);
 
-	const response = await fetchWithTimeout(url);
-	if (!response.ok) {
-		throw new Error(
-			`NHL web API error: ${response.status} ${response.statusText}`,
-		);
+	return {
+		...landing,
+		firstName: normalizeLocaleName(landing.firstName),
+		fullTeamName: normalizeOptionalLocaleName(landing.fullTeamName),
+		isActive: Boolean(landing.isActive),
+		lastName: normalizeLocaleName(landing.lastName),
+		playerId: landing.playerId ?? playerId,
+		seasonTotals: landing.seasonTotals ?? [],
+		sweaterNumber:
+			typeof landing.sweaterNumber === "number"
+				? landing.sweaterNumber
+				: undefined,
+	};
+}
+
+function getSweaterNumber(player: StatsPlayerInfo): number | undefined {
+	const sweaterNumber = player.sweaterNumber;
+	return typeof sweaterNumber === "number" ? sweaterNumber : undefined;
+}
+
+function normalizeLocaleName(
+	name: PlayerLanding["firstName"] | PlayerLanding["lastName"],
+): { default: string } {
+	if (typeof name === "string") {
+		return { default: name };
 	}
 
-	const json = (await response.json()) as NhlPlayerLanding;
-	return json;
+	return { default: name?.default ?? "" };
+}
+
+function normalizeOptionalLocaleName(
+	name: PlayerLanding["fullTeamName"],
+): { default?: string } | undefined {
+	if (typeof name === "string") {
+		return { default: name };
+	}
+
+	return name;
 }
 
 /**

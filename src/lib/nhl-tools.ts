@@ -2,7 +2,6 @@ import { tool } from "ai";
 import { z } from "zod";
 import {
 	getNhlPlayerLanding as getNhlPlayerLandingApi,
-	type NhlPlayerLanding,
 	type NhlPlayerSearchResult,
 	searchNhlPlayers as searchNhlPlayersApi,
 } from "#/lib/nhl-api";
@@ -37,15 +36,8 @@ export const searchNhlPlayers = tool({
 
 // ─── Tool 2: Get Player Landing ───────────────────────────────────────
 
-export const getNhlPlayerLanding = tool({
-	description:
-		"Fetch an NHL player's full profile and season-by-season statistics from the NHL API. Use this after resolving a player ID to get their career and season totals.",
-	inputSchema: z.object({
-		playerId: z
-			.number()
-			.describe("The NHL player ID (e.g. 8481557 for Matt Boldy)"),
-	}),
-	outputSchema: z.object({
+const playerLandingOutputSchema = z
+	.object({
 		playerId: z.number(),
 		firstName: z.object({ default: z.string() }),
 		lastName: z.object({ default: z.string() }),
@@ -55,20 +47,41 @@ export const getNhlPlayerLanding = tool({
 		position: z.string().optional(),
 		sweaterNumber: z.number().optional(),
 		seasonTotals: z.array(
-			z.object({
-				season: z.number(),
-				leagueAbbrev: z.string(),
-				gameTypeId: z.number(),
-				gamesPlayed: z.number(),
-				goals: z.number(),
-				assists: z.number(),
-				points: z.number(),
-				teamName: z.object({ default: z.string().optional() }).optional(),
-				teamCommonName: z.object({ default: z.string().optional() }).optional(),
-			}),
+			z
+				.object({
+					season: z.number().optional(),
+					leagueAbbrev: z.string().optional(),
+					gameTypeId: z.number().optional(),
+					gamesPlayed: z.number().nullable().optional(),
+					goals: z.number().nullable().optional(),
+					assists: z.number().nullable().optional(),
+					points: z.number().nullable().optional(),
+					teamName: z
+						.object({ default: z.string().optional() })
+						.or(z.string())
+						.optional(),
+					teamCommonName: z
+						.object({ default: z.string().optional() })
+						.or(z.string())
+						.optional(),
+				})
+				.passthrough(),
 		),
+	})
+	.passthrough();
+
+type PlayerLandingToolOutput = z.infer<typeof playerLandingOutputSchema>;
+
+export const getNhlPlayerLanding = tool({
+	description:
+		"Fetch an NHL player's full profile and season-by-season statistics from the NHL API. Use this after resolving a player ID to get their career and season totals.",
+	inputSchema: z.object({
+		playerId: z
+			.number()
+			.describe("The NHL player ID (e.g. 8481557 for Matt Boldy)"),
 	}),
-	execute: async ({ playerId }): Promise<NhlPlayerLanding> => {
+	outputSchema: playerLandingOutputSchema,
+	execute: async ({ playerId }): Promise<PlayerLandingToolOutput> => {
 		return getNhlPlayerLandingApi(playerId);
 	},
 });
