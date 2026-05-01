@@ -2,6 +2,9 @@
   "name": "puckwise",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
   "imports": {
     "#/*": "./src/*"
   },
