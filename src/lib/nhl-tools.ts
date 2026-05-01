@@ -1,10 +1,48 @@
 import { tool } from "ai";
 import { z } from "zod";
 import {
-	getNhlPlayerLanding as getNhlPlayerLandingApi,
-	type NhlPlayerSearchResult,
-	searchNhlPlayers as searchNhlPlayersApi,
-} from "#/lib/nhl-api";
+	createNhlApiClient,
+	type PlayerLanding,
+	type StatsPlayerInfo,
+} from "@puckwise/nhl-api";
+
+const nhlApi = createNhlApiClient();
+
+type NhlPlayerSearchResult = {
+	id: number;
+	fullName: string;
+	firstName: string;
+	lastName: string;
+	currentTeamId?: number;
+	positionCode?: string;
+	sweaterNumber?: number;
+};
+
+type NhlSeasonTotal = NonNullable<PlayerLanding["seasonTotals"]>[number];
+
+type NormalizedNhlPlayerLanding = Omit<
+	PlayerLanding,
+	| "firstName"
+	| "fullTeamName"
+	| "isActive"
+	| "lastName"
+	| "playerId"
+	| "seasonTotals"
+	| "sweaterNumber"
+> & {
+	playerId: number;
+	isActive: boolean;
+	currentTeamId?: number;
+	currentTeamAbbrev?: string;
+	fullTeamName?: { default?: string };
+	firstName: { default: string };
+	lastName: { default: string };
+	sweaterNumber?: number;
+	position?: string;
+	featuredStats?: unknown;
+	careerTotals?: unknown;
+	seasonTotals: NhlSeasonTotal[];
+};
 
 // ─── Tool 1: Search Players ───────────────────────────────────────────
 
@@ -30,7 +68,19 @@ export const searchNhlPlayers = tool({
 		}),
 	),
 	execute: async ({ lastName, firstName }): Promise<NhlPlayerSearchResult[]> => {
-		return searchNhlPlayersApi(lastName, firstName);
+		const response = await nhlApi.players.search({ firstName, lastName });
+
+		return response.data.map((player) => ({
+			id: player.playerId,
+			fullName:
+				player.fullName ??
+				[player.firstName, player.lastName].filter(Boolean).join(" "),
+			firstName: player.firstName ?? "",
+			lastName: player.lastName ?? "",
+			currentTeamId: player.currentTeamId ?? undefined,
+			positionCode: player.positionCode,
+			sweaterNumber: getSweaterNumber(player),
+		}));
 	},
 });
 
@@ -82,6 +132,45 @@ export const getNhlPlayerLanding = tool({
 	}),
 	outputSchema: playerLandingOutputSchema,
 	execute: async ({ playerId }): Promise<PlayerLandingToolOutput> => {
-		return getNhlPlayerLandingApi(playerId);
+		const landing = await nhlApi.players.getLanding(playerId);
+
+		return {
+			...landing,
+			firstName: normalizeLocaleName(landing.firstName),
+			fullTeamName: normalizeOptionalLocaleName(landing.fullTeamName),
+			isActive: Boolean(landing.isActive),
+			lastName: normalizeLocaleName(landing.lastName),
+			playerId: landing.playerId ?? playerId,
+			seasonTotals: landing.seasonTotals ?? [],
+			sweaterNumber:
+				typeof landing.sweaterNumber === "number"
+					? landing.sweaterNumber
+					: undefined,
+		} satisfies NormalizedNhlPlayerLanding;
 	},
 });
+
+function getSweaterNumber(player: StatsPlayerInfo): number | undefined {
+	const sweaterNumber = player.sweaterNumber;
+	return typeof sweaterNumber === "number" ? sweaterNumber : undefined;
+}
+
+function normalizeLocaleName(
+	name: PlayerLanding["firstName"] | PlayerLanding["lastName"],
+): { default: string } {
+	if (typeof name === "string") {
+		return { default: name };
+	}
+
+	return { default: name?.default ?? "" };
+}
+
+function normalizeOptionalLocaleName(
+	name: PlayerLanding["fullTeamName"],
+): { default?: string } | undefined {
+	if (typeof name === "string") {
+		return { default: name };
+	}
+
+	return name;
+}
