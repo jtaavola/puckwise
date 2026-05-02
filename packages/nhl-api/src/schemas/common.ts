@@ -29,7 +29,12 @@ export const isoDateSchema = z
 		);
 	}, "Expected a valid ISO date string");
 
-export const teamAbbrevSchema = z.string().min(2).max(3).toUpperCase();
+export const teamAbbrevSchema = z
+	.string()
+	.min(2)
+	.max(3)
+	.toUpperCase()
+	.pipe(z.string().regex(/^[A-Z]{2,3}$/, "Expected an alphabetic team code"));
 export const teamIdSchema = z.number().int().positive();
 export const gameIdSchema = z.number().int().positive();
 export const gameTypeSchema = z.number().int().positive();

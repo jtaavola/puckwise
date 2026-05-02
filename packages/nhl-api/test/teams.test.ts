@@ -218,4 +218,26 @@ describe("teams domain client", () => {
 			/Invalid Stats API language/,
 		);
 	});
+
+	it("rejects non-alphabetic team abbreviations before building path params", () => {
+		const fetch = vi.fn(async () => jsonResponse(clubStatsFixture));
+		const client = createNhlApiClient({ fetch });
+
+		expect(() => client.teams.getClubStats("..")).toThrow(
+			/Expected an alphabetic team code/,
+		);
+		expect(() => client.teams.getRoster("..")).toThrow(
+			/Expected an alphabetic team code/,
+		);
+		expect(() => client.teams.getProspects("..")).toThrow(
+			/Expected an alphabetic team code/,
+		);
+		expect(() => client.teams.getSchedule("..")).toThrow(
+			/Expected an alphabetic team code/,
+		);
+		expect(() => client.teams.getScoreboard("..")).toThrow(
+			/Expected an alphabetic team code/,
+		);
+		expect(fetch).not.toHaveBeenCalled();
+	});
 });
