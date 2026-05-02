@@ -42,7 +42,10 @@ export function createScheduleDomain(client: NhlApiClient) {
 		getCalendar(params: ScheduleCalendarParams = {}) {
 			return client.web("/schedule-calendar/{date}", {
 				...pickRequestOptions(params),
-				pathParams: { date: params.date ? parseIsoDate(params.date) : "now" },
+				pathParams: {
+					date:
+						params.date === undefined ? "now" : parseIsoDate(params.date),
+				},
 				query: pickLangQuery(params),
 				schema: scheduleCalendarSchema,
 			});

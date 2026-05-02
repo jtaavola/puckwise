@@ -152,6 +152,9 @@ describe("schedule and season clients", () => {
 		expect(() => client.schedule.getByDate("2024/10/04")).toThrow(
 			/ISO date string/,
 		);
+		expect(() => client.schedule.getCalendar({ date: "" })).toThrow(
+			/ISO date string/,
+		);
 		expect(() =>
 			client.seasons.getComponentSeasons({ season: 20242026 }),
 		).toThrow(/consecutive years/);
