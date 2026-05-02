@@ -63,6 +63,8 @@ type NormalizedChartData = {
 	series: NormalizedSeries[];
 };
 
+const EMPTY_CHART_DATA: ChartPoint[] = [];
+
 const chartMargin = {
 	left: 8,
 	right: 8,
@@ -90,7 +92,7 @@ function ShadcnChart({
 	subtitle,
 	type,
 	yAxisLabel,
-	data = [],
+	data = EMPTY_CHART_DATA,
 }: ChartProps) {
 	const chartTitle = title?.trim() || "Chart";
 	const chartType = type === "line" ? "line" : "bar";
