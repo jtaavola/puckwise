@@ -25,30 +25,6 @@ export const playerLandingSkaterFixture = {
 	},
 };
 
-export const playerLandingGoalieFixture = {
-	playerId: 8476999,
-	firstName: { default: "Connor" },
-	lastName: { default: "Hellebuyck" },
-	currentTeamAbbrev: "WPG",
-	currentTeamId: 52,
-	position: "G",
-	shootsCatches: "L",
-	seasonTotals: [
-		{
-			gameTypeId: 2,
-			gamesPlayed: 60,
-			gaa: 2.39,
-			savePctg: 0.921,
-			season: 20232024,
-			shutouts: 5,
-			wins: 37,
-		},
-	],
-	careerTotals: {
-		regularSeason: { gamesPlayed: 505, savePctg: 0.917, wins: 275 },
-	},
-};
-
 export const playerGameLogFixture = {
 	seasonId: 20232024,
 	gameTypeId: 2,

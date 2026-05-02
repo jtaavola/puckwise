@@ -1,73 +1,12 @@
 import type { Spec } from "@json-render/core";
-import { defineRegistry, JSONUIProvider, Renderer } from "@json-render/react";
-import {
-	Bar,
-	BarChart,
-	CartesianGrid,
-	Label,
-	Line,
-	LineChart,
-	XAxis,
-	YAxis,
-} from "recharts";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "#/components/ui/card";
-import {
-	type ChartConfig,
-	ChartContainer,
-	ChartLegend,
-	ChartLegendContent,
-	ChartTooltip,
-	ChartTooltipContent,
-} from "#/components/ui/chart";
-import {
-	Empty,
-	EmptyDescription,
-	EmptyHeader,
-	EmptyTitle,
-} from "#/components/ui/empty";
-import { chartCatalog } from "#/lib/chart-catalog";
+import { lazy, Suspense } from "react";
+import { isRenderableSpec } from "#/lib/puckwise-chart-spec";
 
-const { registry: chartRegistry } = defineRegistry(chartCatalog, {
-	components: {
-		Chart: ({ props }) => <ShadcnChart {...props} />,
-	},
-});
+const LazyPuckwiseChartRenderer = lazy(
+	() => import("#/components/puckwise-chart-renderer"),
+);
 
-type ChartPoint = {
-	label: string;
-	value: number;
-	series?: string;
-};
-
-type ChartProps = {
-	title: string;
-	subtitle?: string;
-	type: "bar" | "line";
-	yAxisLabel?: string;
-	data: ChartPoint[];
-};
-
-type NormalizedSeries = {
-	key: string;
-	label: string;
-};
-
-type NormalizedChartData = {
-	points: Array<Record<string, number | string>>;
-	series: NormalizedSeries[];
-};
-
-const chartMargin = {
-	left: 8,
-	right: 8,
-	top: 16,
-};
+export { isRenderableSpec };
 
 export function PuckwiseChart({ spec }: { spec: Spec | null }) {
 	if (!isRenderableSpec(spec)) {
@@ -75,205 +14,17 @@ export function PuckwiseChart({ spec }: { spec: Spec | null }) {
 	}
 
 	return (
-		<JSONUIProvider initialState={spec.state} registry={chartRegistry}>
-			<Renderer registry={chartRegistry} spec={spec} />
-		</JSONUIProvider>
+		<Suspense fallback={<ChartLoadingFallback />}>
+			<LazyPuckwiseChartRenderer spec={spec} />
+		</Suspense>
 	);
 }
 
-export function isRenderableSpec(spec: Spec | null | undefined): spec is Spec {
-	return Boolean(spec?.root && spec.elements?.[spec.root]);
-}
-
-function ShadcnChart({
-	title,
-	subtitle,
-	type,
-	yAxisLabel,
-	data = [],
-}: ChartProps) {
-	const chartTitle = title?.trim() || "Chart";
-	const chartType = type === "line" ? "line" : "bar";
-	const { points: chartData, series } = normalizeChartData(data, yAxisLabel);
-	const chartConfig = Object.fromEntries(
-		series.map((item, index) => [
-			item.key,
-			{
-				label: item.label,
-				color: `var(--chart-${(index % 5) + 1})`,
-			},
-		]),
-	) satisfies ChartConfig;
-
+function ChartLoadingFallback() {
 	return (
-		<Card className="my-4">
-			<CardHeader>
-				<CardTitle>{chartTitle}</CardTitle>
-				{subtitle && <CardDescription>{subtitle}</CardDescription>}
-			</CardHeader>
-			<CardContent>
-				{chartData.length === 0 ? (
-					<Empty className="min-h-64">
-						<EmptyHeader>
-							<EmptyTitle>No chart data</EmptyTitle>
-							<EmptyDescription>
-								No chart data is available for this response.
-							</EmptyDescription>
-						</EmptyHeader>
-					</Empty>
-				) : (
-					<ChartContainer config={chartConfig} className="h-72 w-full">
-						{chartType === "bar" ? (
-							<BarChart
-								accessibilityLayer
-								data={chartData}
-								margin={chartMargin}
-							>
-								<CartesianGrid vertical={false} />
-								<ChartXAxis />
-								<ChartYAxis label={yAxisLabel} />
-								<ChartTooltip
-									content={<ChartTooltipContent indicator="dashed" />}
-									cursor={false}
-								/>
-								{series.map((item) => (
-									<Bar
-										dataKey={item.key}
-										fill={`var(--color-${item.key})`}
-										key={item.key}
-										radius={6}
-									/>
-								))}
-								{series.length > 1 && (
-									<ChartLegend content={<ChartLegendContent />} />
-								)}
-							</BarChart>
-						) : (
-							<LineChart
-								accessibilityLayer
-								data={chartData}
-								margin={chartMargin}
-							>
-								<CartesianGrid vertical={false} />
-								<ChartXAxis />
-								<ChartYAxis label={yAxisLabel} />
-								<ChartTooltip
-									content={<ChartTooltipContent indicator="line" />}
-									cursor={false}
-								/>
-								{series.map((item) => (
-									<Line
-										dataKey={item.key}
-										dot={{ fill: `var(--color-${item.key})` }}
-										key={item.key}
-										stroke={`var(--color-${item.key})`}
-										strokeWidth={2}
-										type="monotone"
-									/>
-								))}
-								{series.length > 1 && (
-									<ChartLegend content={<ChartLegendContent />} />
-								)}
-							</LineChart>
-						)}
-					</ChartContainer>
-				)}
-			</CardContent>
-		</Card>
-	);
-}
-
-function ChartXAxis() {
-	return (
-		<XAxis
-			axisLine={false}
-			dataKey="label"
-			interval="preserveStartEnd"
-			tickFormatter={formatLabel}
-			tickLine={false}
-			tickMargin={8}
+		<output
+			aria-label="Loading chart"
+			className="my-4 block h-72 w-full animate-pulse rounded-xl border border-border/70 bg-muted/35"
 		/>
 	);
-}
-
-function ChartYAxis({ label }: { label?: string }) {
-	return (
-		<YAxis
-			axisLine={false}
-			tickFormatter={formatTick}
-			tickLine={false}
-			tickMargin={8}
-			width={label ? 64 : 48}
-		>
-			{label && (
-				<Label
-					angle={-90}
-					className="fill-muted-foreground text-xs"
-					position="insideLeft"
-					value={label}
-				/>
-			)}
-		</YAxis>
-	);
-}
-
-function normalizeChartData(
-	data: ChartPoint[],
-	defaultSeriesLabel = "Value",
-): NormalizedChartData {
-	if (!Array.isArray(data)) {
-		return { points: [], series: [] };
-	}
-
-	const seriesByName = new Map<string, NormalizedSeries>();
-	const pointsByLabel = new Map<string, Record<string, number | string>>();
-
-	data.forEach((point, index) => {
-		if (!point || typeof point !== "object") {
-			return;
-		}
-
-		const value = Number(point.value);
-
-		if (!Number.isFinite(value)) {
-			return;
-		}
-
-		const label = String(point.label || `#${index + 1}`);
-		const seriesLabel = String(point.series || defaultSeriesLabel || "Value");
-		let series = seriesByName.get(seriesLabel);
-
-		if (!series) {
-			series = {
-				key: `series${seriesByName.size + 1}`,
-				label: seriesLabel,
-			};
-			seriesByName.set(seriesLabel, series);
-		}
-
-		const chartPoint = pointsByLabel.get(label) ?? { label };
-		chartPoint[series.key] = value;
-		pointsByLabel.set(label, chartPoint);
-	});
-
-	return {
-		points: [...pointsByLabel.values()],
-		series: [...seriesByName.values()],
-	};
-}
-
-function formatLabel(value: string) {
-	return value.length > 12 ? `${value.slice(0, 12)}…` : value;
-}
-
-function formatTick(value: number | string) {
-	const numberValue = Number(value);
-
-	if (!Number.isFinite(numberValue)) {
-		return String(value);
-	}
-
-	return Number.isInteger(numberValue)
-		? String(numberValue)
-		: numberValue.toFixed(1);
 }

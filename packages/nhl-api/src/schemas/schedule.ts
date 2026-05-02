@@ -48,7 +48,7 @@ export const tvBroadcastSchema = z
 	})
 	.passthrough();
 
-export const periodDescriptorSchema = z
+const periodDescriptorSchema = z
 	.object({
 		number: z.number().int().positive().optional(),
 		periodType: z.string().optional(),

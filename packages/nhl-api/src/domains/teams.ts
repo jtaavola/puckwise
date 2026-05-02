@@ -1,11 +1,6 @@
 import type { NhlApiClient } from "../client.js";
 import { NhlApiError } from "../errors.js";
-import {
-	cayenneAnd,
-	cayenneEq,
-	type PathParams,
-	type QueryParams,
-} from "../http.js";
+import type { PathParams } from "../http.js";
 import {
 	gameTypeSchema,
 	seasonIdSchema,
@@ -23,29 +18,15 @@ import {
 	teamScheduleSchema,
 	teamScoreboardSchema,
 } from "../schemas/teams.js";
-
-export type NhlApiDomainRequestOptions = {
-	headers?: HeadersInit;
-	signal?: AbortSignal;
-	timeoutMs?: number;
-};
-
-export type StatsApiLanguage = "en" | "fr" | (string & {});
-export type StatsApiSortDirection = "asc" | "desc";
-
-export type StatsApiListParams = NhlApiDomainRequestOptions & {
-	cayenneExp?: string;
-	dir?: StatsApiSortDirection;
-	exclude?: string;
-	factCayenneExp?: string;
-	include?: string;
-	isAggregate?: boolean;
-	isGame?: boolean;
-	lang?: StatsApiLanguage;
-	limit?: number;
-	sort?: string;
-	start?: number;
-};
+import {
+	buildStatsQuery,
+	type NhlApiDomainRequestOptions,
+	pickLangQuery,
+	pickRequestOptions,
+	type StatsApiLanguage,
+	type StatsApiListParams,
+	statsPath,
+} from "./common.js";
 
 export type StandingsParams = NhlApiDomainRequestOptions & {
 	date?: Date | string;
@@ -254,20 +235,6 @@ function parseGameType(gameType: number): number {
 	return gameTypeSchema.parse(gameType);
 }
 
-function pickRequestOptions(
-	options: NhlApiDomainRequestOptions,
-): NhlApiDomainRequestOptions {
-	return {
-		headers: options.headers,
-		signal: options.signal,
-		timeoutMs: options.timeoutMs,
-	};
-}
-
-function pickLangQuery(options: { lang?: string }): QueryParams {
-	return { lang: options.lang };
-}
-
 function getSchedulePath(params: TeamScheduleParams): string {
 	if (params.month) {
 		return "/club-schedule/{teamAbbrev}/month/{month}";
@@ -345,49 +312,4 @@ function formatDate(date: Date | string): string {
 	}
 
 	return date;
-}
-
-function statsPath(lang: StatsApiLanguage | undefined, path: string): string {
-	if (!lang || lang === "en") {
-		return path;
-	}
-
-	const encodedLang = encodeStatsApiLanguage(lang);
-	return `/../${encodedLang}${path}`;
-}
-
-function encodeStatsApiLanguage(lang: StatsApiLanguage): string {
-	if (!/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(lang)) {
-		throw new NhlApiError({
-			code: "VALIDATION_ERROR",
-			message: `Invalid Stats API language "${lang}"`,
-		});
-	}
-
-	return encodeURIComponent(lang);
-}
-
-function buildStatsQuery(
-	params: StatsApiListParams,
-	filters: Record<string, string | number | boolean | undefined> = {},
-): QueryParams {
-	const expressions = Object.entries(filters)
-		.filter((entry): entry is [string, string | number | boolean] => {
-			return entry[1] !== undefined;
-		})
-		.map(([field, value]) => cayenneEq(field, value));
-	const cayenneExp = cayenneAnd(...expressions, params.cayenneExp ?? "");
-
-	return {
-		cayenneExp: cayenneExp || undefined,
-		dir: params.dir,
-		exclude: params.exclude,
-		factCayenneExp: params.factCayenneExp,
-		include: params.include,
-		isAggregate: params.isAggregate,
-		isGame: params.isGame,
-		limit: params.limit,
-		sort: params.sort,
-		start: params.start,
-	};
 }

@@ -1,4 +1,4 @@
-export const finalGameSummary = {
+const finalGameSummary = {
 	awayTeam: {
 		abbrev: "EDM",
 		id: 22,
@@ -23,7 +23,7 @@ export const finalGameSummary = {
 	venue: { default: "Amerant Bank Arena" },
 };
 
-export const liveGameSummary = {
+const liveGameSummary = {
 	awayTeam: {
 		abbrev: "MIN",
 		id: 30,
