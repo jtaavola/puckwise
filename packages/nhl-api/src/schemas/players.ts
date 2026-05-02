@@ -93,6 +93,7 @@ export const playerLandingSchema = playerIdentitySchema
 		fullTeamName: localeStringSchema.or(z.string()).optional(),
 		heightInCentimeters: nullableNumberSchema,
 		heightInInches: nullableNumberSchema,
+		position: playerPositionCodeSchema.or(z.string()).optional(),
 		seasonTotals: z
 			.array(skaterSeasonTotalSchema.or(goalieSeasonTotalSchema))
 			.optional(),
@@ -103,7 +104,11 @@ export const playerLandingSchema = playerIdentitySchema
 		weightInKilograms: nullableNumberSchema,
 		weightInPounds: nullableNumberSchema,
 	})
-	.passthrough();
+	.passthrough()
+	.transform((player) => ({
+		...player,
+		positionCode: player.positionCode ?? player.position,
+	}));
 
 export const playerGameLogGameSchema = z
 	.object({

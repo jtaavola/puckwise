@@ -12,7 +12,7 @@ describe("NHL API live integration", () => {
 			expect(landing.playerId).toBe(8478402);
 			expect(landing.firstName).toMatchObject({ default: "Connor" });
 			expect(landing.lastName).toMatchObject({ default: "McDavid" });
-			expect(landing.position).toBe("C");
+			expect(landing.positionCode).toBe("C");
 			expect(landing.seasonTotals?.length).toBeGreaterThan(0);
 		},
 		20_000,
