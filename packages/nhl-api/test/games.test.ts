@@ -43,12 +43,23 @@ function jsonResponse(data: unknown): Response {
 describe("games domain schemas", () => {
 	it("parses scheduled/live-style scores and final game payloads", () => {
 		expect(scoresResponseSchema.parse(scoresFixture).games[0]).toMatchObject({
-			gameId: 2023030417,
+			id: 2023030417,
 			gameState: "OFF",
 		});
 		expect(scoreboardResponseSchema.parse(scoreboardFixture).gamesByDate?.[0]).toMatchObject({
 			date: "2026-01-15",
 		});
+	});
+
+	it("requires game summaries to include id", () => {
+		const { id: _id, ...summaryWithoutIdentifier } = scoresFixture.games[0];
+
+		expect(() =>
+			scoresResponseSchema.parse({
+				...scoresFixture,
+				games: [summaryWithoutIdentifier],
+			}),
+		).toThrow();
 	});
 
 	it("parses gamecenter, Stats API, and auxiliary game fixtures", () => {

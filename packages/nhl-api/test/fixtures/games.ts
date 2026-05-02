@@ -7,7 +7,6 @@ export const finalGameSummary = {
 		sog: 31,
 	},
 	gameDate: "2024-06-24",
-	gameId: 2023030417,
 	gameScheduleState: "OK",
 	gameState: "OFF",
 	gameType: 3,
@@ -18,6 +17,7 @@ export const finalGameSummary = {
 		score: 2,
 		sog: 24,
 	},
+	id: 2023030417,
 	season: 20232024,
 	startTimeUTC: "2024-06-25T00:00:00Z",
 	venue: { default: "Amerant Bank Arena" },
@@ -36,7 +36,6 @@ export const liveGameSummary = {
 		timeRemaining: "12:08",
 	},
 	gameDate: "2026-01-15",
-	gameId: 2025020701,
 	gameScheduleState: "OK",
 	gameState: "LIVE",
 	gameType: 2,
@@ -50,6 +49,7 @@ export const liveGameSummary = {
 		number: 2,
 		periodType: "REG",
 	},
+	id: 2025020701,
 	season: 20252026,
 	startTimeUTC: "2026-01-16T01:00:00Z",
 };
@@ -95,7 +95,7 @@ export const boxscoreFixture = {
 		],
 	},
 	gameDate: finalGameSummary.gameDate,
-	gameId: finalGameSummary.gameId,
+	gameId: finalGameSummary.id,
 	gameState: finalGameSummary.gameState,
 	homeTeam: {
 		...finalGameSummary.homeTeam,
@@ -153,7 +153,7 @@ export const playByPlayFixture = {
 };
 
 export const storyFixture = {
-	gameId: finalGameSummary.gameId,
+	gameId: finalGameSummary.id,
 	modules: [
 		{
 			type: "recap",
@@ -167,7 +167,7 @@ export const statsGameInfoFixture = {
 		{
 			awayTeamId: 22,
 			gameDate: "2024-06-24",
-			gameId: finalGameSummary.gameId,
+			gameId: finalGameSummary.id,
 			gameStateId: 7,
 			gameTypeId: 3,
 			homeTeamId: 13,
@@ -191,7 +191,7 @@ export const shiftChartsFixture = {
 		{
 			duration: "00:42",
 			endTime: "00:42",
-			gameId: finalGameSummary.gameId,
+			gameId: finalGameSummary.id,
 			period: 1,
 			playerId: 8478402,
 			startTime: "00:00",
@@ -214,7 +214,7 @@ export const tvScheduleFixture = {
 	date: "2024-06-24",
 	games: [
 		{
-			gameId: finalGameSummary.gameId,
+			gameId: finalGameSummary.id,
 			networks: ["ABC"],
 		},
 	],
@@ -224,7 +224,7 @@ export const oddsFixture = {
 	countryCode: "US",
 	games: [
 		{
-			gameId: finalGameSummary.gameId,
+			gameId: finalGameSummary.id,
 			odds: [{ provider: "example", awayTeamOdds: "+120" }],
 		},
 	],
@@ -232,12 +232,12 @@ export const oddsFixture = {
 
 export const replayFixture = {
 	eventNumber: 12,
-	gameId: finalGameSummary.gameId,
+	gameId: finalGameSummary.id,
 	replays: [{ angle: "main", url: "https://example.test/replay.mp4" }],
 };
 
 export const wscPlayByPlayFixture = {
-	gameId: finalGameSummary.gameId,
+	gameId: finalGameSummary.id,
 	plays: [
 		{
 			clipId: 123,
