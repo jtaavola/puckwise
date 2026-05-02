@@ -4,6 +4,10 @@ import { createNhlApiClient } from "../src/index.js";
 const client = createNhlApiClient({ timeoutMs: 15_000 });
 const stanleyCupFinalGameId = 2023030417;
 const stanleyCupFinalDate = "2024-06-24";
+const oilersTeamAbbrev = "EDM";
+const oilersTeamId = 22;
+const oilersFranchiseId = 25;
+const regularSeason = 20232024;
 
 function getGameId(game: { gameId?: number; id?: number }): number | undefined {
 	return game.gameId ?? game.id;
@@ -157,6 +161,93 @@ describe("NHL API live integration", () => {
 		expect(milestones.data[0]?.milestone).toEqual(expect.any(String));
 		expect(milestones.data[0]?.milestoneAmount).toBeGreaterThan(0);
 	}, 20_000);
+
+	it(
+		"fetches and validates Web API team standings, stats, roster, and schedule",
+		async () => {
+			const [standings, clubStats, roster, schedule] = await Promise.all([
+				client.teams.getStandings({ date: "2024-04-18" }),
+				client.teams.getClubStats(oilersTeamAbbrev, {
+					gameType: 2,
+					season: regularSeason,
+				}),
+				client.teams.getRoster(oilersTeamAbbrev, { season: regularSeason }),
+				client.teams.getSchedule(oilersTeamAbbrev, { season: regularSeason }),
+			]);
+
+			const oilersStanding = standings.standings.find((team) => {
+				return JSON.stringify(team.teamAbbrev).includes(oilersTeamAbbrev);
+			});
+			const mcdavidStats = clubStats.skaters?.find((player) => {
+				return player.playerId === 8478402;
+			});
+			const mcdavidRosterSpot = roster.forwards?.find((player) => {
+				return player.id === 8478402 || player.playerId === 8478402;
+			});
+			const seasonOpener = schedule.games.find((game) => {
+				return getGameId(game) === 2023020009;
+			});
+
+			expect(oilersStanding).toMatchObject({
+				gamesPlayed: 82,
+				points: 104,
+				seasonId: regularSeason,
+			});
+			expect(JSON.stringify(oilersStanding?.teamAbbrev)).toContain(
+				oilersTeamAbbrev,
+			);
+			expect(mcdavidStats).toMatchObject({
+				assists: 100,
+				playerId: 8478402,
+				points: 132,
+			});
+			expect(mcdavidRosterSpot).toMatchObject({
+				positionCode: "C",
+				sweaterNumber: 97,
+			});
+			expect(schedule.games.length).toBeGreaterThan(80);
+			expect(seasonOpener).toMatchObject({
+				gameDate: "2023-10-11",
+				id: 2023020009,
+				season: regularSeason,
+			});
+		},
+		20_000,
+	);
+
+	it(
+		"fetches and validates Stats API team info, season stats, and franchises",
+		async () => {
+			const [info, stats, franchises] = await Promise.all([
+				client.teams.getById(oilersTeamId),
+				client.teams.getStats({
+					gameType: 2,
+					season: regularSeason,
+					teamId: oilersTeamId,
+				}),
+				client.teams.getFranchises({ franchiseId: oilersFranchiseId }),
+			]);
+
+			expect(info.data).toEqual([
+				expect.objectContaining({
+					franchiseId: oilersFranchiseId,
+					fullName: "Edmonton Oilers",
+					id: oilersTeamId,
+				}),
+			]);
+			expect(stats.data[0]).toMatchObject({
+				gamesPlayed: 82,
+				points: 104,
+				seasonId: regularSeason,
+				teamId: oilersTeamId,
+			});
+			expect(franchises.data[0]).toMatchObject({
+				fullName: "Edmonton Oilers",
+				id: oilersFranchiseId,
+			});
+		},
+		20_000,
+	);
 
 	it("fetches and validates Web API league schedules and calendars", async () => {
 		const [currentSchedule, historicalSchedule, calendar] = await Promise.all([

@@ -29,7 +29,13 @@ export const isoDateSchema = z
 		);
 	}, "Expected a valid ISO date string");
 
-export const teamAbbrevSchema = z.string().min(2).max(3).toUpperCase();
+export const teamAbbrevSchema = z
+	.string()
+	.min(2)
+	.max(3)
+	.toUpperCase()
+	.pipe(z.string().regex(/^[A-Z]{2,3}$/, "Expected an alphabetic team code"));
+export const teamIdSchema = z.number().int().positive();
 export const gameIdSchema = z.number().int().positive();
 export const gameTypeSchema = z.number().int().positive();
 
@@ -75,3 +81,4 @@ export function parseNhlApiResponse<TSchema extends z.ZodType>(
 
 export type LocaleString = z.infer<typeof localeStringSchema>;
 export type Pagination = z.infer<typeof paginationSchema>;
+export type TeamId = z.infer<typeof teamIdSchema>;
