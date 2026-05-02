@@ -3,7 +3,7 @@ import { SPEC_DATA_PART_TYPE } from "@json-render/core";
 import { usePostHog } from "@posthog/react";
 import { IconArrowNarrowUp } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { useState } from "react";
 import {
 	Conversation,
@@ -91,14 +91,14 @@ function Puckwise() {
 					: "min-h-dvh overflow-x-hidden overflow-y-auto"
 			}`}
 		>
-			<motion.div
+			<m.div
 				className={`mx-auto flex min-h-0 w-full flex-col ${
 					hasSubmitted ? "h-full" : "min-h-[calc(100dvh-4rem)]"
 				}`}
 				layout
 				transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
 			>
-				<motion.div
+				<m.div
 					className={`flex w-full min-h-0 flex-1 flex-col px-0 pb-4 sm:pb-6 ${
 						hasSubmitted ? "justify-end" : "justify-center"
 					}`}
@@ -108,7 +108,7 @@ function Puckwise() {
 					{/* WARNING: Blur filters can be expensive; keep these exit animations limited to small elements. */}
 					<AnimatePresence initial={false} mode="popLayout">
 						{!hasSubmitted && (
-							<motion.div
+							<m.div
 								className="mb-8 flex flex-col items-center"
 								exit={{ opacity: 0, scale: 0.96, y: -22, filter: "blur(8px)" }}
 								initial={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
@@ -125,13 +125,13 @@ function Puckwise() {
 								<p className="mt-1 mb-0 text-sm text-muted-foreground">
 									Ask questions about hockey statistics
 								</p>
-							</motion.div>
+							</m.div>
 						)}
 					</AnimatePresence>
 
 					<AnimatePresence initial={false}>
 						{hasSubmitted && (
-							<motion.div
+							<m.div
 								className="min-h-0 w-full flex-1 pb-4"
 								exit={{ opacity: 0 }}
 								initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
@@ -169,11 +169,11 @@ function Puckwise() {
 									</ConversationContent>
 									<ConversationScrollButton />
 								</Conversation>
-							</motion.div>
+							</m.div>
 						)}
 					</AnimatePresence>
 
-					<motion.div
+					<m.div
 						className="mx-auto w-full max-w-2xl shrink-0 px-4"
 						layout
 						transition={{ duration: 0.72, ease: [0.16, 1, 0.3, 1] }}
@@ -196,11 +196,11 @@ function Puckwise() {
 								</PromptInputSubmit>
 							</PromptInputFooter>
 						</PromptInput>
-					</motion.div>
+					</m.div>
 
 					<AnimatePresence initial={false} mode="popLayout">
 						{!hasSubmitted && (
-							<motion.div
+							<m.div
 								className="mx-auto w-full max-w-4xl px-4"
 								exit={{ opacity: 0, y: 26, filter: "blur(8px)" }}
 								initial={{ opacity: 1, y: 0, filter: "blur(0px)" }}
@@ -230,11 +230,11 @@ function Puckwise() {
 								<p className="mt-6 mb-0 text-center text-xs text-muted-foreground">
 									Data provided by the official NHL API. Stats may be delayed.
 								</p>
-							</motion.div>
+							</m.div>
 						)}
 					</AnimatePresence>
-				</motion.div>
-			</motion.div>
+				</m.div>
+			</m.div>
 		</main>
 	);
 }
