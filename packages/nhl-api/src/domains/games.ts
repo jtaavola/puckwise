@@ -1,6 +1,5 @@
 import type { NhlApiClient } from "../client.js";
 import { NhlApiError } from "../errors.js";
-import { cayenneAnd, cayenneEq, type QueryParams } from "../http.js";
 import { gameIdSchema, seasonIdSchema } from "../schemas/common.js";
 import {
 	gameBoxscoreSchema,
@@ -19,12 +18,15 @@ import {
 	tvScheduleResponseSchema,
 	wscPlayByPlayResponseSchema,
 } from "../schemas/games.js";
-import type {
+import {
+	buildStatsQuery,
 	NhlApiDomainRequestOptions,
+	pickLangQuery,
+	pickRequestOptions,
 	StatsApiLanguage,
 	StatsApiListParams,
-	StatsApiSortDirection,
-} from "./players.js";
+	statsPath,
+} from "./common.js";
 
 export type GameDate = string | Date;
 
@@ -83,8 +85,6 @@ export type WscPlayByPlayParams = GameLanguageOptions & {
 };
 
 export type GamesDomain = ReturnType<typeof createGamesDomain>;
-
-type StatsFilterValue = string | number | boolean;
 
 export function createGamesDomain(client: NhlApiClient) {
 	return {
@@ -242,20 +242,6 @@ function parseGameType(gameType: number): number {
 	return gameTypeIdSchema.parse(gameType);
 }
 
-function pickRequestOptions(
-	options: NhlApiDomainRequestOptions,
-): NhlApiDomainRequestOptions {
-	return {
-		headers: options.headers,
-		signal: options.signal,
-		timeoutMs: options.timeoutMs,
-	};
-}
-
-function pickLangQuery(options: { lang?: string }): QueryParams {
-	return { lang: options.lang };
-}
-
 function formatDate(date: GameDate): string {
 	if (date instanceof Date) {
 		return date.toISOString().slice(0, 10);
@@ -306,51 +292,9 @@ function parsePositiveInt(value: number, field: string): number {
 	return value;
 }
 
-function statsPath(lang: StatsApiLanguage | undefined, path: string): string {
-	if (!lang || lang === "en") {
-		return path;
-	}
-
-	const encodedLang = encodeStatsApiLanguage(lang);
-	return `/../${encodedLang}${path}`;
-}
-
-function encodeStatsApiLanguage(lang: StatsApiLanguage): string {
-	if (!/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(lang)) {
-		throw new NhlApiError({
-			code: "VALIDATION_ERROR",
-			message: `Invalid Stats API language "${lang}"`,
-		});
-	}
-
-	return encodeURIComponent(lang);
-}
-
-function buildStatsQuery(
-	params: StatsApiListParams,
-	filters: Record<string, StatsFilterValue | undefined> = {},
-): QueryParams {
-	const expressions = Object.entries(filters)
-		.filter((entry): entry is [string, StatsFilterValue] => {
-			return entry[1] !== undefined;
-		})
-		.map(([field, value]) => cayenneEq(field, value));
-	const cayenneExp = cayenneAnd(...expressions, params.cayenneExp ?? "");
-
-	return {
-		cayenneExp: cayenneExp || undefined,
-		dir: params.dir as StatsApiSortDirection | undefined,
-		exclude: params.exclude,
-		include: params.include,
-		limit: params.limit,
-		sort: params.sort,
-		start: params.start,
-	};
-}
-
 function statsGameFilters(
 	params: StatsGameInfoParams,
-): Record<string, StatsFilterValue | undefined> {
+): Record<string, string | number | boolean | undefined> {
 	return {
 		awayTeamId: params.awayTeamId,
 		id:
