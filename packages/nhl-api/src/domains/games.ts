@@ -353,15 +353,15 @@ function statsGameFilters(
 ): Record<string, StatsFilterValue | undefined> {
 	return {
 		awayTeamId: params.awayTeamId,
-		gameId:
+		id:
 			params.gameId === undefined ? undefined : parseGameId(params.gameId),
 		gameStateId: params.gameStateId,
-		gameTypeId:
+		gameType:
 			params.gameType === undefined
 				? undefined
 				: parseGameType(params.gameType),
 		homeTeamId: params.homeTeamId,
-		seasonId:
+		season:
 			params.season === undefined ? undefined : parseSeason(params.season),
 	};
 }

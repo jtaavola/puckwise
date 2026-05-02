@@ -86,7 +86,7 @@ export const gameSummarySchema = z
 		clock: gameClockSchema.optional(),
 		gameCenterLink: z.string().optional(),
 		gameDate: gameDateSchema.optional(),
-		gameId: gameIdSchema,
+		gameId: gameIdSchema.optional(),
 		gameScheduleState: gameScheduleStateSchema.optional(),
 		gameState: gameStateSchema.optional(),
 		gameType: gameTypeIdSchema.optional(),
@@ -155,9 +155,10 @@ export const gameBoxscoreSchema = z
 	.object({
 		awayTeam: gameBoxscoreTeamSchema,
 		gameDate: gameDateSchema.optional(),
-		gameId: gameIdSchema,
+		gameId: gameIdSchema.optional(),
 		gameState: gameStateSchema.optional(),
 		homeTeam: gameBoxscoreTeamSchema,
+		id: gameIdSchema.optional(),
 		playerByGameStats: z.record(z.string(), z.unknown()).optional(),
 		season: seasonIdSchema.optional(),
 	})
@@ -209,9 +210,11 @@ export const statsGameInfoSchema = z
 	.object({
 		awayTeamId: nullableNumberSchema,
 		gameDate: nullableStringSchema,
-		gameId: gameIdSchema,
+		gameId: gameIdSchema.optional(),
 		gameStateId: nullableNumberSchema,
+		gameType: gameTypeIdSchema.optional(),
 		gameTypeId: gameTypeIdSchema.optional(),
+		id: gameIdSchema.optional(),
 		homeTeamId: nullableNumberSchema,
 		season: seasonIdSchema.optional(),
 		seasonId: seasonIdSchema.optional(),

@@ -159,7 +159,7 @@ describe("games domain client", () => {
 			"/stats/rest/en/shiftcharts",
 		]);
 		expect(requests[0]?.searchParams.get("cayenneExp")).toBe(
-			"gameId=2023030417 and gameTypeId=3 and seasonId=20232024",
+			"id=2023030417 and gameType=3 and season=20232024",
 		);
 		expect(requests[0]?.searchParams.get("sort")).toBe("gameDate");
 		expect(requests[2]?.searchParams.get("cayenneExp")).toBe(

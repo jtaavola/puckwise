@@ -2,8 +2,80 @@ import { describe, expect, it } from "vitest";
 import { createNhlApiClient } from "../src/index.js";
 
 const client = createNhlApiClient({ timeoutMs: 15_000 });
+const stanleyCupFinalGameId = 2023030417;
+const stanleyCupFinalDate = "2024-06-24";
+
+function getGameId(game: { gameId?: number; id?: number }): number | undefined {
+	return game.gameId ?? game.id;
+}
 
 describe("NHL API live integration", () => {
+	it(
+		"fetches and validates Web API scores and gamecenter game data",
+		async () => {
+			const [scores, landing, boxscore, playByPlay] = await Promise.all([
+				client.games.getScores({ date: stanleyCupFinalDate }),
+				client.games.getLanding(stanleyCupFinalGameId),
+				client.games.getBoxscore(stanleyCupFinalGameId),
+				client.games.getPlayByPlay(stanleyCupFinalGameId),
+			]);
+
+			const finalGame = scores.games.find(
+				(game) => getGameId(game) === stanleyCupFinalGameId,
+			);
+
+			expect(finalGame).toMatchObject({
+				awayTeam: expect.objectContaining({ abbrev: "EDM" }),
+				gameDate: stanleyCupFinalDate,
+				gameState: "OFF",
+				homeTeam: expect.objectContaining({ abbrev: "FLA" }),
+			});
+			expect(getGameId(landing)).toBe(stanleyCupFinalGameId);
+			expect(landing.summary?.scoring?.length).toBeGreaterThan(0);
+			expect(getGameId(boxscore)).toBe(stanleyCupFinalGameId);
+			expect(boxscore.awayTeam.abbrev).toBe("EDM");
+			expect(boxscore.homeTeam.abbrev).toBe("FLA");
+			expect(getGameId(playByPlay)).toBe(stanleyCupFinalGameId);
+			expect(playByPlay.plays.length).toBeGreaterThan(100);
+			expect(playByPlay.rosterSpots?.length).toBeGreaterThan(0);
+		},
+		20_000,
+	);
+
+	it(
+		"fetches and validates Stats API game info and shift charts",
+		async () => {
+			const [gameInfo, shiftCharts] = await Promise.all([
+				client.games.getInfo({
+					gameId: stanleyCupFinalGameId,
+					gameType: 3,
+					season: 20232024,
+				}),
+				client.games.getShiftCharts({
+					gameId: stanleyCupFinalGameId,
+					limit: 5,
+					playerId: 8478402,
+				}),
+			]);
+
+			expect(gameInfo.data).toEqual([
+				expect.objectContaining({
+					gameDate: stanleyCupFinalDate,
+					homeTeamId: 13,
+					id: stanleyCupFinalGameId,
+					season: 20232024,
+				}),
+			]);
+			expect(shiftCharts.data.length).toBeGreaterThan(0);
+			expect(shiftCharts.data[0]).toMatchObject({
+				gameId: stanleyCupFinalGameId,
+				playerId: 8478402,
+				teamAbbrev: "EDM",
+			});
+		},
+		20_000,
+	);
+
 	it(
 		"fetches and validates Web API player landing data",
 		async () => {
