@@ -80,6 +80,7 @@ export type PlayersDomain = ReturnType<typeof createPlayersDomain>;
 
 export function createPlayersDomain(client: NhlApiClient) {
 	return {
+		/** Retrieve landing information for a specific player. */
 		getLanding(playerId: number, options: PlayerLandingOptions = {}) {
 			return client.web("/player/{playerId}/landing", {
 				...pickRequestOptions(options),
@@ -89,6 +90,7 @@ export function createPlayersDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve the game log for a specific player, season, and game type. */
 		getGameLog(playerId: number, params: PlayerGameLogParams) {
 			return client.web("/player/{playerId}/game-log/{season}/{gameType}", {
 				...pickRequestOptions(params),
@@ -102,6 +104,7 @@ export function createPlayersDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve basic player information from the Stats API. */
 		search(params: PlayerSearchParams = {}) {
 			return client.stats(statsPath(params.lang, "/players"), {
 				...pickRequestOptions(params),
@@ -117,6 +120,7 @@ export function createPlayersDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve basic player information for a specific player from the Stats API. */
 		getInfo(playerId: number, options: PlayerInfoOptions = {}) {
 			return client.stats(statsPath(options.lang, "/players"), {
 				...pickRequestOptions(options),
@@ -125,6 +129,7 @@ export function createPlayersDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve skater stats for a specific Stats API report. */
 		getSkaterStats(params: PlayerStatsParams = {}) {
 			return client.stats(statsPath(params.lang, "/skater/{report}"), {
 				...pickRequestOptions(params),
@@ -136,6 +141,7 @@ export function createPlayersDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve goalie stats for a specific Stats API report. */
 		getGoalieStats(params: PlayerStatsParams = {}) {
 			return client.stats(statsPath(params.lang, "/goalie/{report}"), {
 				...pickRequestOptions(params),
@@ -147,6 +153,7 @@ export function createPlayersDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve skater leaders for a specific Stats API attribute. */
 		getSkaterLeaders(params: PlayerLeaderParams) {
 			return client.stats(
 				statsPath(params.lang, "/leaders/skaters/{attribute}"),
@@ -161,6 +168,7 @@ export function createPlayersDomain(client: NhlApiClient) {
 			);
 		},
 
+		/** Retrieve goalie leaders for a specific Stats API attribute. */
 		getGoalieLeaders(params: PlayerLeaderParams) {
 			return client.stats(
 				statsPath(params.lang, "/leaders/goalies/{attribute}"),
@@ -175,6 +183,7 @@ export function createPlayersDomain(client: NhlApiClient) {
 			);
 		},
 
+		/** Retrieve skater or goalie milestones from the Stats API. */
 		getMilestones(params: PlayerMilestoneParams) {
 			return client.stats(statsPath(params.lang, "/milestones/{kind}"), {
 				...pickRequestOptions(params),
@@ -186,6 +195,7 @@ export function createPlayersDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve information about players in the spotlight. */
 		getSpotlight(params: PlayerSpotlightParams = {}) {
 			return client.web("/player-spotlight", {
 				...pickRequestOptions(params),
