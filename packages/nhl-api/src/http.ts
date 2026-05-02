@@ -124,7 +124,10 @@ export async function requestJson(
 		() => timeoutController.abort(),
 		options.timeoutMs,
 	);
-	const combinedSignal = combineSignals(timeoutController.signal, options.signal);
+	const combinedSignal = combineSignals(
+		timeoutController.signal,
+		options.signal,
+	);
 
 	try {
 		const response = await options.fetch(options.url, {
