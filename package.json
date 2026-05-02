@@ -97,5 +97,10 @@
       "esbuild",
       "lightningcss"
     ]
+  },
+  "reactDoctor": {
+    "ignore": {
+      "files": ["src/components/ui/**/*", "src/components/ai-elements/**/*"]
+    }
   }
 }

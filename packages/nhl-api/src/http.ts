@@ -24,7 +24,7 @@ export type NhlFetch = (
 	init?: RequestInit,
 ) => Promise<Response>;
 
-export type RequestJsonOptions = {
+type RequestJsonOptions = {
 	fetch: NhlFetch;
 	url: URL;
 	method?: string;

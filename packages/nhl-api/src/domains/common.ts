@@ -14,7 +14,10 @@ export type StatsApiListParams = NhlApiDomainRequestOptions & {
 	cayenneExp?: string;
 	dir?: StatsApiSortDirection;
 	exclude?: string;
+	factCayenneExp?: string;
 	include?: string;
+	isAggregate?: boolean;
+	isGame?: boolean;
 	lang?: StatsApiLanguage;
 	limit?: number;
 	sort?: string;
@@ -62,7 +65,10 @@ export function buildStatsQuery(
 		cayenneExp: cayenneExp || undefined,
 		dir: params.dir,
 		exclude: params.exclude,
+		factCayenneExp: params.factCayenneExp,
 		include: params.include,
+		isAggregate: params.isAggregate,
+		isGame: params.isGame,
 		limit: params.limit,
 		sort: params.sort,
 		start: params.start,

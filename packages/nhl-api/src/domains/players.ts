@@ -18,16 +18,8 @@ import {
 	pickRequestOptions,
 	type StatsApiLanguage,
 	type StatsApiListParams,
-	type StatsApiSortDirection,
 	statsPath,
 } from "./common.js";
-
-export type {
-	NhlApiDomainRequestOptions,
-	StatsApiLanguage,
-	StatsApiListParams,
-	StatsApiSortDirection,
-};
 
 export type PlayerLandingOptions = NhlApiDomainRequestOptions & {
 	lang?: string;
