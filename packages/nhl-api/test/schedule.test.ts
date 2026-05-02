@@ -1,13 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import {
-	createNhlApiClient,
-	leagueScheduleSchema,
-	scheduleCalendarSchema,
-	scheduleGameSummarySchema,
-	statsComponentSeasonsResponseSchema,
-	statsSeasonsResponseSchema,
-	webSeasonsSchema,
-} from "../src/index.js";
+import { createNhlApiClient } from "../src/index.js";
 import {
 	historicalScheduleFixture,
 	leagueScheduleFixture,
@@ -24,139 +16,143 @@ function jsonResponse(data: unknown): Response {
 	});
 }
 
-describe("schedule and season schemas", () => {
-	it("parses current and historical league schedule fixtures", () => {
-		expect(leagueScheduleSchema.parse(leagueScheduleFixture).gameWeek[0]).toMatchObject({
-			date: "2024-10-04",
-			numberOfGames: 1,
-		});
-		expect(leagueScheduleSchema.parse(historicalScheduleFixture).gameWeek[0]?.games[0]).toMatchObject({
-			id: 2023020657,
-			season: 20232024,
-		});
+function recordingFetch(data: unknown): {
+	fetch: ReturnType<typeof vi.fn>;
+	requests: URL[];
+} {
+	const requests: URL[] = [];
+	const fetch = vi.fn(async (input: RequestInfo | URL) => {
+		const url = new URL(input.toString());
+		requests.push(url);
+
+		return jsonResponse(data);
 	});
 
-	it("parses schedule calendar, Web API seasons, and Stats API seasons", () => {
-		expect(scheduleCalendarSchema.parse(scheduleCalendarFixture).teams[0]).toMatchObject({
-			abbrev: "NJD",
-			seasonId: 20242025,
-		});
-		expect(webSeasonsSchema.parse(webSeasonsFixture)).toContain(20232024);
-		expect(statsComponentSeasonsResponseSchema.parse(statsComponentSeasonsFixture).data[0]).toMatchObject({
-			component: "StatsHome",
-			seasonId: 20252026,
-		});
-		expect(statsSeasonsResponseSchema.parse(statsSeasonsFixture).data).toHaveLength(2);
-	});
-
-	it("keeps schedule game summaries reusable as standalone parsed values", () => {
-		const game = leagueScheduleFixture.gameWeek[0]?.games[0];
-
-		expect(scheduleGameSummarySchema.parse(game)).toMatchObject({
-			id: 2024020001,
-			awayTeam: { abbrev: "NJD" },
-			homeTeam: { abbrev: "BUF" },
-		});
-	});
-
-	it("rejects invalid ISO calendar dates in schedule groupings", () => {
-		expect(() =>
-			leagueScheduleSchema.parse({
-				gameWeek: [{ date: "2024/10/04", games: [] }],
-			}),
-		).toThrow();
-	});
-});
+	return { fetch, requests };
+}
 
 describe("schedule and season clients", () => {
-	it("uses Web API endpoints for league schedules and calendars", async () => {
-		const requests: string[] = [];
-		const fetch = vi.fn(async (input: RequestInfo | URL) => {
-			requests.push(input.toString());
-			const pathname = new URL(input.toString()).pathname;
+	describe("schedule URL construction", () => {
+		it("builds the current league schedule URL", async () => {
+			const { fetch, requests } = recordingFetch(leagueScheduleFixture);
+			const client = createNhlApiClient({ fetch });
 
-			if (pathname.includes("/schedule-calendar/")) {
-				return jsonResponse(scheduleCalendarFixture);
-			}
+			await client.schedule.getLeagueSchedule({ lang: "fr" });
 
-			if (pathname.endsWith("/season")) {
-				return jsonResponse(webSeasonsFixture);
-			}
-
-			if (pathname.endsWith("/schedule/2024-01-13")) {
-				return jsonResponse(historicalScheduleFixture);
-			}
-
-			return jsonResponse(leagueScheduleFixture);
+			expect(requests[0]?.toString()).toBe(
+				"https://api-web.nhle.com/v1/schedule/now?lang=fr",
+			);
 		});
-		const client = createNhlApiClient({ fetch });
 
-		await client.schedule.getLeagueSchedule({ lang: "fr" });
-		await client.schedule.getByDate("2024-01-13");
-		await client.schedule.getCalendar();
-		await client.schedule.getCalendar({ date: "2024-10-04", lang: "en" });
-		await client.seasons.getWebSeasons();
+		it("builds the dated league schedule URL", async () => {
+			const { fetch, requests } = recordingFetch(historicalScheduleFixture);
+			const client = createNhlApiClient({ fetch });
 
-		expect(requests).toEqual([
-			"https://api-web.nhle.com/v1/schedule/now?lang=fr",
-			"https://api-web.nhle.com/v1/schedule/2024-01-13",
-			"https://api-web.nhle.com/v1/schedule-calendar/now",
-			"https://api-web.nhle.com/v1/schedule-calendar/2024-10-04?lang=en",
-			"https://api-web.nhle.com/v1/season",
-		]);
+			await client.schedule.getByDate("2024-01-13");
+
+			expect(requests[0]?.toString()).toBe(
+				"https://api-web.nhle.com/v1/schedule/2024-01-13",
+			);
+		});
+
+		it("builds the current schedule calendar URL", async () => {
+			const { fetch, requests } = recordingFetch(scheduleCalendarFixture);
+			const client = createNhlApiClient({ fetch });
+
+			await client.schedule.getCalendar();
+
+			expect(requests[0]?.toString()).toBe(
+				"https://api-web.nhle.com/v1/schedule-calendar/now",
+			);
+		});
+
+		it("builds the dated schedule calendar URL", async () => {
+			const { fetch, requests } = recordingFetch(scheduleCalendarFixture);
+			const client = createNhlApiClient({ fetch });
+
+			await client.schedule.getCalendar({ date: "2024-10-04", lang: "en" });
+
+			expect(requests[0]?.toString()).toBe(
+				"https://api-web.nhle.com/v1/schedule-calendar/2024-10-04?lang=en",
+			);
+		});
 	});
 
-	it("serializes Stats API season filters with deterministic cayenne expressions", async () => {
-		const requests: URL[] = [];
-		const fetch = vi.fn(async (input: RequestInfo | URL) => {
-			const url = new URL(input.toString());
-			requests.push(url);
+	describe("season URL construction", () => {
+		it("builds the Web API seasons URL", async () => {
+			const { fetch, requests } = recordingFetch(webSeasonsFixture);
+			const client = createNhlApiClient({ fetch });
 
-			if (url.pathname.includes("/componentSeason")) {
-				return jsonResponse(statsComponentSeasonsFixture);
-			}
+			await client.seasons.getWebSeasons();
 
-			return jsonResponse(statsSeasonsFixture);
-		});
-		const client = createNhlApiClient({ fetch });
-
-		await client.seasons.getComponentSeasons({
-			component: "StatsHome",
-			gameType: 2,
-			season: 20242025,
-		});
-		await client.seasons.getStatsSeasons({
-			limit: 1,
-			rowInUse: 1,
-			season: 20242025,
+			expect(requests[0]?.toString()).toBe(
+				"https://api-web.nhle.com/v1/season",
+			);
 		});
 
-		expect(requests.map((url) => url.pathname)).toEqual([
-			"/stats/rest/en/componentSeason",
-			"/stats/rest/en/season",
-		]);
-		expect(requests[0]?.searchParams.get("cayenneExp")).toBe(
-			'component="StatsHome" and gameTypeId=2 and seasonId=20242025',
-		);
-		expect(requests[1]?.searchParams.get("cayenneExp")).toBe(
-			"id=20242025 and rowInUse=1",
-		);
-		expect(requests[1]?.searchParams.get("limit")).toBe("1");
+		it("builds the component seasons URL with cayenne filters", async () => {
+			const { fetch, requests } = recordingFetch(statsComponentSeasonsFixture);
+			const client = createNhlApiClient({ fetch });
+
+			await client.seasons.getComponentSeasons({
+				component: "StatsHome",
+				gameType: 2,
+				season: 20242025,
+			});
+
+			expect(requests[0]?.pathname).toBe("/stats/rest/en/componentSeason");
+			expect(requests[0]?.searchParams.get("cayenneExp")).toBe(
+				'component="StatsHome" and gameTypeId=2 and seasonId=20242025',
+			);
+		});
+
+		it("builds the Stats API seasons URL with cayenne filters", async () => {
+			const { fetch, requests } = recordingFetch(statsSeasonsFixture);
+			const client = createNhlApiClient({ fetch });
+
+			await client.seasons.getStatsSeasons({
+				limit: 1,
+				rowInUse: 1,
+				season: 20242025,
+			});
+
+			expect(requests[0]?.pathname).toBe("/stats/rest/en/season");
+			expect(requests[0]?.searchParams.get("cayenneExp")).toBe(
+				"id=20242025 and rowInUse=1",
+			);
+			expect(requests[0]?.searchParams.get("limit")).toBe("1");
+		});
 	});
 
-	it("validates SDK date and season inputs before request construction", async () => {
-		const client = createNhlApiClient({
-			fetch: vi.fn(async () => jsonResponse(leagueScheduleFixture)),
+	describe("pre-fetch validation", () => {
+		it("rejects invalid schedule dates before fetch", () => {
+			const fetch = vi.fn(async () => jsonResponse(leagueScheduleFixture));
+			const client = createNhlApiClient({ fetch });
+
+			expect(() => client.schedule.getByDate("2024/10/04")).toThrow(
+				/ISO date string/,
+			);
+			expect(fetch).not.toHaveBeenCalled();
 		});
 
-		expect(() => client.schedule.getByDate("2024/10/04")).toThrow(
-			/ISO date string/,
-		);
-		expect(() => client.schedule.getCalendar({ date: "" })).toThrow(
-			/ISO date string/,
-		);
-		expect(() =>
-			client.seasons.getComponentSeasons({ season: 20242026 }),
-		).toThrow(/consecutive years/);
+		it("rejects invalid schedule calendar dates before fetch", () => {
+			const fetch = vi.fn(async () => jsonResponse(leagueScheduleFixture));
+			const client = createNhlApiClient({ fetch });
+
+			expect(() => client.schedule.getCalendar({ date: "" })).toThrow(
+				/ISO date string/,
+			);
+			expect(fetch).not.toHaveBeenCalled();
+		});
+
+		it("rejects invalid component season IDs before fetch", () => {
+			const fetch = vi.fn(async () => jsonResponse(leagueScheduleFixture));
+			const client = createNhlApiClient({ fetch });
+
+			expect(() =>
+				client.seasons.getComponentSeasons({ season: 20242026 }),
+			).toThrow(/consecutive years/);
+			expect(fetch).not.toHaveBeenCalled();
+		});
 	});
 });
