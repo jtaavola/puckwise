@@ -105,7 +105,7 @@ Responsibilities:
 - JSON parsing
 - consistent error messages
 
-Current logic in `src/lib/nhl-api.ts` can migrate here over time.
+Current tool logic in `src/lib/nhl-tools.ts` can use this over time.
 
 ---
 
@@ -530,7 +530,6 @@ Add as product demand emerges:
 Current files:
 
 ```txt
-src/lib/nhl-api.ts
 src/lib/nhl-tools.ts
 ```
 
@@ -540,7 +539,7 @@ Actions:
 - Keep `getNhlPlayerLanding` for now.
 - Introduce `src/lib/nhl/http.ts`.
 - Introduce `src/lib/nhl/endpoints.ts`.
-- Move shared fetch logic from `nhl-api.ts` into the new HTTP layer.
+- Move shared fetch logic from the tools into the new HTTP layer.
 
 Deliverable:
 

@@ -1,11 +1,12 @@
 import { tool } from "ai";
 import { z } from "zod";
 import {
-	getNhlPlayerLanding as getNhlPlayerLandingApi,
-	type NhlPlayerLanding,
-	type NhlPlayerSearchResult,
-	searchNhlPlayers as searchNhlPlayersApi,
-} from "#/lib/nhl-api";
+	createNhlApiClient,
+	playerLandingSchema,
+	statsPlayerInfoSchema,
+} from "@puckwise/nhl-api";
+
+const nhlApi = createNhlApiClient();
 
 // ─── Tool 1: Search Players ───────────────────────────────────────────
 
@@ -19,19 +20,10 @@ export const searchNhlPlayers = tool({
 			.optional()
 			.describe("The player's first name, if known (e.g. 'Matt')"),
 	}),
-	outputSchema: z.array(
-		z.object({
-			id: z.number(),
-			fullName: z.string(),
-			firstName: z.string(),
-			lastName: z.string(),
-			currentTeamId: z.number().optional(),
-			positionCode: z.string().optional(),
-			sweaterNumber: z.number().optional(),
-		}),
-	),
-	execute: async ({ lastName, firstName }): Promise<NhlPlayerSearchResult[]> => {
-		return searchNhlPlayersApi(lastName, firstName);
+	outputSchema: z.array(statsPlayerInfoSchema),
+	execute: async ({ lastName, firstName }) => {
+		const response = await nhlApi.players.search({ firstName, lastName });
+		return response.data;
 	},
 });
 
@@ -45,30 +37,6 @@ export const getNhlPlayerLanding = tool({
 			.number()
 			.describe("The NHL player ID (e.g. 8481557 for Matt Boldy)"),
 	}),
-	outputSchema: z.object({
-		playerId: z.number(),
-		firstName: z.object({ default: z.string() }),
-		lastName: z.object({ default: z.string() }),
-		isActive: z.boolean(),
-		currentTeamId: z.number().optional(),
-		currentTeamAbbrev: z.string().optional(),
-		position: z.string().optional(),
-		sweaterNumber: z.number().optional(),
-		seasonTotals: z.array(
-			z.object({
-				season: z.number(),
-				leagueAbbrev: z.string(),
-				gameTypeId: z.number(),
-				gamesPlayed: z.number(),
-				goals: z.number(),
-				assists: z.number(),
-				points: z.number(),
-				teamName: z.object({ default: z.string().optional() }).optional(),
-				teamCommonName: z.object({ default: z.string().optional() }).optional(),
-			}),
-		),
-	}),
-	execute: async ({ playerId }): Promise<NhlPlayerLanding> => {
-		return getNhlPlayerLandingApi(playerId);
-	},
+	outputSchema: playerLandingSchema,
+	execute: async ({ playerId }) => nhlApi.players.getLanding(playerId),
 });
