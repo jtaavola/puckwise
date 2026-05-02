@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
 	gameIdSchema,
+	gameTypeSchema,
 	localeStringSchema,
 	paginationSchema,
 	seasonIdSchema,
@@ -11,7 +12,6 @@ const nullableStringSchema = z.string().nullable().optional();
 const nullableNumberSchema = z.number().nullable().optional();
 
 export const playerIdSchema = z.number().int().positive();
-export const gameTypeSchema = z.number().int().positive();
 export const playerPositionCodeSchema = z.enum(["C", "L", "R", "D", "G"]);
 export const playerHandednessSchema = z.enum(["L", "R"]).or(z.string().min(1));
 

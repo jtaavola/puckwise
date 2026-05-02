@@ -248,4 +248,61 @@ describe("NHL API live integration", () => {
 		},
 		20_000,
 	);
+
+	it("fetches and validates Web API league schedules and calendars", async () => {
+		const [currentSchedule, historicalSchedule, calendar] = await Promise.all([
+			client.schedule.getLeagueSchedule(),
+			client.schedule.getByDate("2024-01-13"),
+			client.schedule.getCalendar({ date: "2024-10-04" }),
+		]);
+
+		expect(currentSchedule.gameWeek.length).toBeGreaterThan(0);
+		expect(currentSchedule.gameWeek[0]?.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+
+		const historicalGames = historicalSchedule.gameWeek.flatMap(
+			(day) => day.games,
+		);
+		expect(historicalGames.length).toBeGreaterThan(0);
+		expect(historicalGames).toContainEqual(
+			expect.objectContaining({
+				id: 2023020657,
+				season: 20232024,
+			}),
+		);
+
+		expect(calendar).toMatchObject({
+			startDate: "2024-10-04",
+			endDate: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+		});
+		expect(calendar.teams.length).toBeGreaterThan(0);
+		expect(calendar.teams[0]?.abbrev).toEqual(expect.any(String));
+	}, 20_000);
+
+	it("fetches and validates Web API and Stats API season metadata", async () => {
+		const [webSeasons, componentSeasons, statsSeasons] = await Promise.all([
+			client.seasons.getWebSeasons(),
+			client.seasons.getComponentSeasons({ limit: 5 }),
+			client.seasons.getStatsSeasons({
+				limit: 1,
+				season: 20232024,
+			}),
+		]);
+
+		expect(webSeasons).toContain(20232024);
+		expect(Math.max(...webSeasons)).toBeGreaterThanOrEqual(20232024);
+
+		expect(componentSeasons.data.length).toBeGreaterThan(0);
+		expect(componentSeasons.data[0]).toMatchObject({
+			component: expect.any(String),
+			gameTypeId: expect.any(Number),
+			seasonId: expect.any(Number),
+		});
+
+		expect(statsSeasons.data).toEqual([
+			expect.objectContaining({
+				id: 20232024,
+				formattedSeasonId: expect.any(String),
+			}),
+		]);
+	}, 20_000);
 });

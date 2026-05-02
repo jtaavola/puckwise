@@ -7,11 +7,11 @@ import {
 	type QueryParams,
 } from "../http.js";
 import {
+	gameTypeSchema,
 	seasonIdSchema,
 	teamAbbrevSchema,
 	teamIdSchema,
 } from "../schemas/common.js";
-import { gameTypeSchema } from "../schemas/players.js";
 import {
 	clubStatsSchema,
 	prospectsSchema,

@@ -3,6 +3,11 @@ import { createGamesDomain, type GamesDomain } from "./domains/games.js";
 import { createPlayersDomain, type PlayersDomain } from "./domains/players.js";
 import { createTeamsDomain, type TeamsDomain } from "./domains/teams.js";
 import {
+	createScheduleDomain,
+	type ScheduleDomain,
+} from "./domains/schedule.js";
+import { createSeasonsDomain, type SeasonsDomain } from "./domains/seasons.js";
+import {
 	buildUrl,
 	DEFAULT_TIMEOUT_MS,
 	getDefaultBaseUrls,
@@ -40,6 +45,8 @@ export class NhlApiClient {
 	readonly defaultHeaders: HeadersInit;
 	readonly games: GamesDomain;
 	readonly players: PlayersDomain;
+	readonly schedule: ScheduleDomain;
+	readonly seasons: SeasonsDomain;
 	readonly teams: TeamsDomain;
 	readonly timeoutMs: number;
 
@@ -55,6 +62,8 @@ export class NhlApiClient {
 		this.timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 		this.games = createGamesDomain(this);
 		this.players = createPlayersDomain(this);
+		this.schedule = createScheduleDomain(this);
+		this.seasons = createSeasonsDomain(this);
 		this.teams = createTeamsDomain(this);
 	}
 

@@ -18,9 +18,21 @@ export const seasonIdSchema = z
 		return endYear === startYear + 1;
 	}, "Season IDs must use the YYYYYYYY format with consecutive years");
 
+export const isoDateSchema = z
+	.string()
+	.regex(/^\d{4}-\d{2}-\d{2}$/, "Expected an ISO date string (YYYY-MM-DD)")
+	.refine((date) => {
+		const parsed = new Date(`${date}T00:00:00.000Z`);
+		return (
+			!Number.isNaN(parsed.getTime()) &&
+			parsed.toISOString().slice(0, 10) === date
+		);
+	}, "Expected a valid ISO date string");
+
 export const teamAbbrevSchema = z.string().min(2).max(3).toUpperCase();
 export const teamIdSchema = z.number().int().positive();
 export const gameIdSchema = z.number().int().positive();
+export const gameTypeSchema = z.number().int().positive();
 
 export const paginationSchema = z
 	.object({

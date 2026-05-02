@@ -1,17 +1,14 @@
 import { z } from "zod";
 import {
 	gameIdSchema,
+	gameTypeSchema,
 	localeStringSchema,
 	paginationSchema,
 	seasonIdSchema,
 	teamAbbrevSchema,
 	teamIdSchema,
 } from "./common.js";
-import {
-	gameTypeSchema,
-	playerIdSchema,
-	playerPositionCodeSchema,
-} from "./players.js";
+import { playerIdSchema, playerPositionCodeSchema } from "./players.js";
 
 const nullableStringSchema = z.string().nullable().optional();
 const nullableNumberSchema = z.number().nullable().optional();

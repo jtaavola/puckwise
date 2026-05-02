@@ -1,5 +1,7 @@
 export {
 	gameIdSchema,
+	gameTypeSchema,
+	isoDateSchema,
 	type LocaleString,
 	localeStringSchema,
 	type Pagination,
@@ -69,7 +71,6 @@ export {
 } from "./games.js";
 export {
 	type GameType,
-	gameTypeSchema,
 	goalieSeasonTotalSchema,
 	type PlayerGameLog,
 	type PlayerGameLogGame,
@@ -146,3 +147,27 @@ export {
 	teamScheduleSchema,
 	teamScoreboardSchema,
 } from "./teams.js";
+export {
+	type LeagueSchedule,
+	leagueScheduleSchema,
+	type ScheduleCalendar,
+	type ScheduleGameSummary,
+	type ScheduleGameWeek,
+	type SchedulePlayerSummary,
+	type ScheduleTeamSummary,
+	type StatsComponentSeason,
+	type StatsSeason,
+	scheduleCalendarSchema,
+	scheduleGameSummarySchema,
+	scheduleGameWeekSchema,
+	schedulePlayerSummarySchema,
+	scheduleTeamSummarySchema,
+	statsComponentSeasonSchema,
+	statsComponentSeasonsResponseSchema,
+	statsSeasonSchema,
+	statsSeasonsResponseSchema,
+	type TvBroadcast,
+	tvBroadcastSchema,
+	type WebSeasons,
+	webSeasonsSchema,
+} from "./schedule.js";
