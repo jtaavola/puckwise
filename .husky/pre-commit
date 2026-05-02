@@ -1,0 +1,12 @@
+npm run format || {
+  echo "Pre-commit format failed. Try running: npm run fix"
+  echo "This will fix any issues eligible for auto-fix."
+  exit 1
+}
+npm run lint || {
+  echo "Pre-commit lint failed. Try running: npm run fix"
+  echo "This will fix any issues eligible for auto-fix."
+  exit 1
+}
+npm run typecheck
+npm run doctor
