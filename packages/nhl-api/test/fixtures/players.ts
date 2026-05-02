@@ -5,7 +5,7 @@ export const playerLandingSkaterFixture = {
 	fullTeamName: { default: "Edmonton Oilers" },
 	currentTeamAbbrev: "EDM",
 	currentTeamId: 22,
-	positionCode: "C",
+	position: "C",
 	shootsCatches: "L",
 	headshot: "https://assets.nhle.com/mugs/nhl/latest/8478402.png",
 	heroImage: "https://assets.nhle.com/mugs/actionshots/8478402.jpg",
@@ -31,7 +31,7 @@ export const playerLandingGoalieFixture = {
 	lastName: { default: "Hellebuyck" },
 	currentTeamAbbrev: "WPG",
 	currentTeamId: 52,
-	positionCode: "G",
+	position: "G",
 	shootsCatches: "L",
 	seasonTotals: [
 		{

@@ -241,7 +241,7 @@ function Puckwise() {
 
 function hasCompleteAssistantPart(part: { type: string; text?: string }) {
 	return (
-		(part.type === "text" && part.text?.trim().length > 0) ||
+		(part.type === "text" && (part.text?.trim().length ?? 0) > 0) ||
 		part.type === SPEC_DATA_PART_TYPE
 	);
 }
