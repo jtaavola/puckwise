@@ -19,6 +19,7 @@ export const seasonIdSchema = z
 	}, "Season IDs must use the YYYYYYYY format with consecutive years");
 
 export const teamAbbrevSchema = z.string().min(2).max(3).toUpperCase();
+export const teamIdSchema = z.number().int().positive();
 export const gameIdSchema = z.number().int().positive();
 
 export const paginationSchema = z
@@ -63,3 +64,4 @@ export function parseNhlApiResponse<TSchema extends z.ZodType>(
 
 export type LocaleString = z.infer<typeof localeStringSchema>;
 export type Pagination = z.infer<typeof paginationSchema>;
+export type TeamId = z.infer<typeof teamIdSchema>;
