@@ -102,6 +102,7 @@ export type TeamsDomain = ReturnType<typeof createTeamsDomain>;
 
 export function createTeamsDomain(client: NhlApiClient) {
 	return {
+		/** Retrieve NHL standings as of now or for a specific date. */
 		getStandings(params: StandingsParams = {}) {
 			return client.web("/standings/{date}", {
 				...pickRequestOptions(params),
@@ -111,6 +112,7 @@ export function createTeamsDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve current or season/game-type statistics for a specific club. */
 		getClubStats(teamAbbrev: string, params: ClubStatsParams = {}) {
 			const hasSeasonAndGameType =
 				params.season !== undefined && params.gameType !== undefined;
@@ -134,6 +136,7 @@ export function createTeamsDomain(client: NhlApiClient) {
 			);
 		},
 
+		/** Retrieve the current roster or season roster for a specific team. */
 		getRoster(teamAbbrev: string, params: TeamRosterParams = {}) {
 			return client.web(
 				params.season === undefined
@@ -148,6 +151,7 @@ export function createTeamsDomain(client: NhlApiClient) {
 			);
 		},
 
+		/** Retrieve prospects for a specific team. */
 		getProspects(teamAbbrev: string, params: TeamProspectsParams = {}) {
 			return client.web("/prospects/{teamAbbrev}", {
 				...pickRequestOptions(params),
@@ -157,6 +161,7 @@ export function createTeamsDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve a team's season, month, or week schedule. */
 		getSchedule(teamAbbrev: string, params: TeamScheduleParams = {}) {
 			return client.web(getSchedulePath(params), {
 				...pickRequestOptions(params),
@@ -166,6 +171,7 @@ export function createTeamsDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve the current scoreboard for a specific team. */
 		getScoreboard(teamAbbrev: string, params: TeamScoreboardParams = {}) {
 			return client.web("/scoreboard/{teamAbbrev}/now", {
 				...pickRequestOptions(params),
@@ -175,6 +181,7 @@ export function createTeamsDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve a list of teams from the Stats API. */
 		getInfo(params: TeamInfoParams = {}) {
 			return client.stats(statsPath(params.lang, "/team"), {
 				...pickRequestOptions(params),
@@ -186,6 +193,7 @@ export function createTeamsDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve Stats API information for a specific team by ID. */
 		getById(teamId: number, options: TeamByIdOptions = {}) {
 			return client.stats(statsPath(options.lang, "/team/id/{teamId}"), {
 				...pickRequestOptions(options),
@@ -194,6 +202,7 @@ export function createTeamsDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve team stats for a specific Stats API report. */
 		getStats(params: TeamStatsParams = {}) {
 			return client.stats(statsPath(params.lang, "/team/{report}"), {
 				...pickRequestOptions(params),
@@ -216,6 +225,7 @@ export function createTeamsDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve franchise information from the Stats API. */
 		getFranchises(params: FranchiseParams = {}) {
 			return client.stats(statsPath(params.lang, "/franchise"), {
 				...pickRequestOptions(params),

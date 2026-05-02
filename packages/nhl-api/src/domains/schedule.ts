@@ -22,6 +22,7 @@ export type ScheduleDomain = ReturnType<typeof createScheduleDomain>;
 
 export function createScheduleDomain(client: NhlApiClient) {
 	return {
+		/** Retrieve the current league schedule. */
 		getLeagueSchedule(params: ScheduleRequestOptions = {}) {
 			return client.web("/schedule/now", {
 				...pickRequestOptions(params),
@@ -30,6 +31,7 @@ export function createScheduleDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve the league schedule for a specific date. */
 		getByDate(date: string, options: ScheduleRequestOptions = {}) {
 			return client.web("/schedule/{date}", {
 				...pickRequestOptions(options),
@@ -39,12 +41,12 @@ export function createScheduleDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve the schedule calendar as of now or for a specific date. */
 		getCalendar(params: ScheduleCalendarParams = {}) {
 			return client.web("/schedule-calendar/{date}", {
 				...pickRequestOptions(params),
 				pathParams: {
-					date:
-						params.date === undefined ? "now" : parseIsoDate(params.date),
+					date: params.date === undefined ? "now" : parseIsoDate(params.date),
 				},
 				query: pickLangQuery(params),
 				schema: scheduleCalendarSchema,

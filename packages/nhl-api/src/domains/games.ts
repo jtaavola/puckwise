@@ -88,6 +88,7 @@ export type GamesDomain = ReturnType<typeof createGamesDomain>;
 
 export function createGamesDomain(client: NhlApiClient) {
 	return {
+		/** Retrieve daily scores as of now or for a specific date. */
 		getScores(params: ScoresParams = {}) {
 			const pathDate =
 				params.date === undefined ? "now" : formatDate(params.date);
@@ -99,6 +100,7 @@ export function createGamesDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve the overall scoreboard, or a specific team's current scoreboard. */
 		getScoreboard(params: ScoreboardParams = {}) {
 			const path = params.team ? "/scoreboard/{team}/now" : "/scoreboard/now";
 			return client.web(path, {
@@ -109,6 +111,7 @@ export function createGamesDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve landing information for a specific game. */
 		getLanding(gameId: number, options: GameLanguageOptions = {}) {
 			return client.web("/gamecenter/{gameId}/landing", {
 				...pickRequestOptions(options),
@@ -118,6 +121,7 @@ export function createGamesDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve boxscore information for a specific game. */
 		getBoxscore(gameId: number, options: GameLanguageOptions = {}) {
 			return client.web("/gamecenter/{gameId}/boxscore", {
 				...pickRequestOptions(options),
@@ -127,6 +131,7 @@ export function createGamesDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve play-by-play information for a specific game. */
 		getPlayByPlay(gameId: number, options: GameLanguageOptions = {}) {
 			return client.web("/gamecenter/{gameId}/play-by-play", {
 				...pickRequestOptions(options),
@@ -136,6 +141,7 @@ export function createGamesDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve game story information for a specific game. */
 		getStory(gameId: number, options: GameLanguageOptions = {}) {
 			return client.web("/wsc/game-story/{gameId}", {
 				...pickRequestOptions(options),
@@ -145,6 +151,7 @@ export function createGamesDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve game information from the Stats API. */
 		getInfo(params: StatsGameInfoParams = {}) {
 			return client.stats(statsPath(params.lang, "/game"), {
 				...pickRequestOptions(params),
@@ -153,6 +160,7 @@ export function createGamesDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve metadata for games from the Stats API. */
 		getMetadata(params: StatsGameMetadataParams = {}) {
 			return client.stats(statsPath(params.lang, "/game/meta"), {
 				...pickRequestOptions(params),
@@ -160,6 +168,7 @@ export function createGamesDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve shift charts for a specific game. */
 		getShiftCharts(params: ShiftChartsParams) {
 			return client.stats(statsPath(params.lang, "/shiftcharts"), {
 				...pickRequestOptions(params),
@@ -172,6 +181,7 @@ export function createGamesDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve information about streaming options. */
 		getStreams(params: StreamsParams = {}) {
 			return client.web("/where-to-watch", {
 				...pickRequestOptions(params),
@@ -183,6 +193,7 @@ export function createGamesDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve the current TV schedule or the TV schedule for a specific date. */
 		getTvSchedule(params: TvScheduleParams = {}) {
 			const pathDate =
 				params.date === undefined ? "now" : formatDate(params.date);
@@ -194,6 +205,7 @@ export function createGamesDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve partner game odds for a country as of the current moment. */
 		getOdds(params: OddsParams) {
 			return client.web("/partner-game/{countryCode}/now", {
 				...pickRequestOptions(params),
@@ -203,6 +215,7 @@ export function createGamesDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve a goal or play replay for a specific game event. */
 		getReplays(params: ReplaysParams) {
 			const path =
 				params.kind === "goal"
@@ -219,6 +232,7 @@ export function createGamesDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve WSC play-by-play content for a specific game. */
 		getWscPlayByPlay(params: WscPlayByPlayParams) {
 			return client.web("/wsc/play-by-play/{gameId}", {
 				...pickRequestOptions(params),
@@ -297,8 +311,7 @@ function statsGameFilters(
 ): Record<string, string | number | boolean | undefined> {
 	return {
 		awayTeamId: params.awayTeamId,
-		id:
-			params.gameId === undefined ? undefined : parseGameId(params.gameId),
+		id: params.gameId === undefined ? undefined : parseGameId(params.gameId),
 		gameStateId: params.gameStateId,
 		gameType:
 			params.gameType === undefined

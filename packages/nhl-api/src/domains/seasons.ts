@@ -32,6 +32,7 @@ export type SeasonsDomain = ReturnType<typeof createSeasonsDomain>;
 
 export function createSeasonsDomain(client: NhlApiClient) {
 	return {
+		/** Retrieve a list of all NHL season IDs, past and present. */
 		getWebSeasons(params: WebSeasonsParams = {}) {
 			return client.web("/season", {
 				...pickRequestOptions(params),
@@ -39,6 +40,7 @@ export function createSeasonsDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve component season information from the Stats API. */
 		getComponentSeasons(params: ComponentSeasonsParams = {}) {
 			return client.stats(statsPath(params.lang, "/componentSeason"), {
 				...pickRequestOptions(params),
@@ -58,6 +60,7 @@ export function createSeasonsDomain(client: NhlApiClient) {
 			});
 		},
 
+		/** Retrieve season information from the Stats API. */
 		getStatsSeasons(params: StatsSeasonsParams = {}) {
 			return client.stats(statsPath(params.lang, "/season"), {
 				...pickRequestOptions(params),
