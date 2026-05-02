@@ -130,7 +130,6 @@ describe("players domain client", () => {
 		const client = createNhlApiClient({ fetch });
 
 		await client.players.search({
-			active: true,
 			currentTeamId: 22,
 			limit: 10,
 			positionCode: "C",
@@ -164,11 +163,11 @@ describe("players domain client", () => {
 			"/stats/rest/en/milestones/skaters",
 		]);
 		expect(requests[0]?.searchParams.get("cayenneExp")).toBe(
-			'active=true and currentTeamId=22 and positionCode="C"',
+			'currentTeamId=22 and positionCode="C"',
 		);
 		expect(requests[0]?.searchParams.get("limit")).toBe("10");
 		expect(requests[0]?.searchParams.get("sort")).toBe("lastName");
-		expect(requests[1]?.searchParams.get("cayenneExp")).toBe("playerId=8478402");
+		expect(requests[1]?.searchParams.get("cayenneExp")).toBe("id=8478402");
 		expect(requests[2]?.searchParams.get("cayenneExp")).toBe(
 			'gameTypeId=2 and positionCode="C" and seasonId=20232024 and teamId=22',
 		);

@@ -24,6 +24,7 @@ export const playerIdentitySchema = z
 		name: localeStringSchema.or(z.string()).optional(),
 		fullName: z.string().optional(),
 		sweaterNumber: z.number().int().positive().nullable().optional(),
+		position: playerPositionCodeSchema.or(z.string()).optional(),
 		positionCode: playerPositionCodeSchema.or(z.string()).optional(),
 		headshot: z.string().url().optional(),
 		heroImage: z.string().url().optional(),
@@ -96,7 +97,7 @@ export const playerLandingSchema = playerIdentitySchema
 		seasonTotals: z
 			.array(skaterSeasonTotalSchema.or(goalieSeasonTotalSchema))
 			.optional(),
-		shopLink: z.string().url().optional(),
+		shopLink: z.string().min(1).optional(),
 		teamCommonName: localeStringSchema.or(z.string()).optional(),
 		teamLogo: z.string().url().optional(),
 		teamPlaceNameWithPreposition: localeStringSchema.or(z.string()).optional(),
@@ -138,14 +139,23 @@ export const playerSpotlightItemSchema = playerIdentitySchema
 		team: playerTeamSchema.optional(),
 		teamAbbrev: teamAbbrevSchema.optional(),
 		teamId: z.number().int().positive().optional(),
+		teamLogo: z.string().url().optional(),
+		teamTriCode: teamAbbrevSchema.optional(),
 	})
 	.passthrough();
 
-export const playerSpotlightSchema = z
+const playerSpotlightObjectSchema = z
 	.object({
 		players: z.array(playerSpotlightItemSchema),
 	})
 	.passthrough();
+
+export const playerSpotlightSchema = z
+	.union([
+		playerSpotlightObjectSchema,
+		z.array(playerSpotlightItemSchema).transform((players) => ({ players })),
+	])
+	.pipe(playerSpotlightObjectSchema);
 
 export const statsPlayerInfoSchema = z
 	.object({
@@ -157,13 +167,23 @@ export const statsPlayerInfoSchema = z
 		currentTeamId: nullableNumberSchema,
 		firstName: z.string().optional(),
 		fullName: z.string().optional(),
+		id: playerIdSchema.optional(),
 		isActive: z.boolean().optional(),
 		lastName: z.string().optional(),
-		playerId: playerIdSchema,
+		playerId: playerIdSchema.optional(),
 		positionCode: playerPositionCodeSchema.or(z.string()).optional(),
 		shootsCatches: nullableStringSchema,
+		sweaterNumber: nullableNumberSchema,
 	})
-	.passthrough();
+	.passthrough()
+	.refine((player) => player.playerId !== undefined || player.id !== undefined, {
+		message: "Stats player info requires either playerId or id",
+		path: ["playerId"],
+	})
+	.transform((player) => ({
+		...player,
+		playerId: player.playerId ?? player.id,
+	}));
 
 export const statsSkaterStatSchema = z
 	.object({

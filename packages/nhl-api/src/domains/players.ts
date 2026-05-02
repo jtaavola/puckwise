@@ -46,7 +46,6 @@ export type StatsApiListParams = NhlApiDomainRequestOptions & {
 };
 
 export type PlayerSearchParams = StatsApiListParams & {
-	active?: boolean;
 	currentTeamId?: number;
 	firstName?: string;
 	lastName?: string;
@@ -112,11 +111,10 @@ export function createPlayersDomain(client: NhlApiClient) {
 			return client.stats(statsPath(params.lang, "/players"), {
 				...pickRequestOptions(params),
 				query: buildStatsQuery(params, {
-					active: params.active,
 					currentTeamId: params.currentTeamId,
 					firstName: params.firstName,
+					id: params.playerId,
 					lastName: params.lastName,
-					playerId: params.playerId,
 					positionCode: params.positionCode,
 				}),
 				schema: statsPlayerInfoResponseSchema,
@@ -126,7 +124,7 @@ export function createPlayersDomain(client: NhlApiClient) {
 		getInfo(playerId: number, options: PlayerInfoOptions = {}) {
 			return client.stats(statsPath(options.lang, "/players"), {
 				...pickRequestOptions(options),
-				query: buildStatsQuery({}, { playerId: parsePlayerId(playerId) }),
+				query: buildStatsQuery({}, { id: parsePlayerId(playerId) }),
 				schema: statsPlayerInfoResponseSchema,
 			});
 		},

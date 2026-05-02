@@ -14,7 +14,8 @@
 	],
 	"scripts": {
 		"build": "tsc -p tsconfig.json",
-		"test": "vitest run --config vitest.config.ts"
+		"test": "vitest run --config vitest.config.ts",
+		"test:integration": "vitest run --config vitest.integration.config.ts"
 	},
 	"dependencies": {
 		"zod": "^4.3.6"
