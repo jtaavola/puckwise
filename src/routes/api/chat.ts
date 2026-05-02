@@ -1,5 +1,8 @@
 import { pipeJsonRender } from "@json-render/core";
-import { type OpenRouterProviderOptions, openrouter } from "@openrouter/ai-sdk-provider";
+import {
+	type OpenRouterProviderOptions,
+	openrouter,
+} from "@openrouter/ai-sdk-provider";
 import { withTracing } from "@posthog/ai";
 import { createFileRoute } from "@tanstack/react-router";
 import {
@@ -45,10 +48,10 @@ function createPuckwiseAgent({
 		providerOptions: {
 			openrouter: {
 				reasoning: {
-					effort: 'low'
-				}
-			} satisfies OpenRouterProviderOptions
-		} ,
+					effort: "low",
+				},
+			} satisfies OpenRouterProviderOptions,
+		},
 		instructions: `You are Puckwise, an AI hockey analytics assistant. Answer clearly and concisely.
 
 Today's date is ${today}.

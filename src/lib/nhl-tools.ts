@@ -1,10 +1,10 @@
-import { tool } from "ai";
-import { z } from "zod";
 import {
 	createNhlApiClient,
 	playerLandingSchema,
 	statsPlayerInfoSchema,
 } from "@puckwise/nhl-api";
+import { tool } from "ai";
+import { z } from "zod";
 
 const nhlApi = createNhlApiClient();
 

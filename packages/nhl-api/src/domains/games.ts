@@ -20,11 +20,11 @@ import {
 } from "../schemas/games.js";
 import {
 	buildStatsQuery,
-	NhlApiDomainRequestOptions,
+	type NhlApiDomainRequestOptions,
 	pickLangQuery,
 	pickRequestOptions,
-	StatsApiLanguage,
-	StatsApiListParams,
+	type StatsApiLanguage,
+	type StatsApiListParams,
 	statsPath,
 } from "./common.js";
 

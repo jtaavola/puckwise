@@ -170,10 +170,13 @@ export const statsPlayerInfoSchema = z
 		shootsCatches: nullableStringSchema,
 	})
 	.passthrough()
-	.refine((player) => player.playerId !== undefined || player.id !== undefined, {
-		message: "Stats player info must include playerId or id",
-		path: ["playerId"],
-	})
+	.refine(
+		(player) => player.playerId !== undefined || player.id !== undefined,
+		{
+			message: "Stats player info must include playerId or id",
+			path: ["playerId"],
+		},
+	)
 	.transform((player) => ({
 		...player,
 		playerId: player.playerId ?? player.id,

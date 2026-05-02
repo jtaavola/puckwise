@@ -54,7 +54,7 @@ function Puckwise() {
 					hasCompleteAssistantPart(part) ||
 					part.type === "dynamic-tool" ||
 					part.type.startsWith("tool-"),
-				),
+			),
 	);
 	const isWaitingForVisibleResponse = isLoading;
 
