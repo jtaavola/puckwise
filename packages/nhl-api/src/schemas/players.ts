@@ -96,7 +96,7 @@ export const playerLandingSchema = playerIdentitySchema
 		seasonTotals: z
 			.array(skaterSeasonTotalSchema.or(goalieSeasonTotalSchema))
 			.optional(),
-		shopLink: z.string().url().optional(),
+		shopLink: z.string().optional(),
 		teamCommonName: localeStringSchema.or(z.string()).optional(),
 		teamLogo: z.string().url().optional(),
 		teamPlaceNameWithPreposition: localeStringSchema.or(z.string()).optional(),
@@ -157,13 +157,22 @@ export const statsPlayerInfoSchema = z
 		currentTeamId: nullableNumberSchema,
 		firstName: z.string().optional(),
 		fullName: z.string().optional(),
+		id: playerIdSchema.optional(),
 		isActive: z.boolean().optional(),
 		lastName: z.string().optional(),
-		playerId: playerIdSchema,
+		playerId: playerIdSchema.optional(),
 		positionCode: playerPositionCodeSchema.or(z.string()).optional(),
 		shootsCatches: nullableStringSchema,
 	})
-	.passthrough();
+	.passthrough()
+	.refine((player) => player.playerId !== undefined || player.id !== undefined, {
+		message: "Stats player info must include playerId or id",
+		path: ["playerId"],
+	})
+	.transform((player) => ({
+		...player,
+		playerId: player.playerId ?? player.id,
+	}));
 
 export const statsSkaterStatSchema = z
 	.object({
