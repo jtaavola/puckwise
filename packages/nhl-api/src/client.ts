@@ -2,6 +2,11 @@ import type { z } from "zod";
 import { createGamesDomain, type GamesDomain } from "./domains/games.js";
 import { createPlayersDomain, type PlayersDomain } from "./domains/players.js";
 import {
+	createScheduleDomain,
+	type ScheduleDomain,
+} from "./domains/schedule.js";
+import { createSeasonsDomain, type SeasonsDomain } from "./domains/seasons.js";
+import {
 	buildUrl,
 	DEFAULT_TIMEOUT_MS,
 	getDefaultBaseUrls,
@@ -39,6 +44,8 @@ export class NhlApiClient {
 	readonly defaultHeaders: HeadersInit;
 	readonly games: GamesDomain;
 	readonly players: PlayersDomain;
+	readonly schedule: ScheduleDomain;
+	readonly seasons: SeasonsDomain;
 	readonly timeoutMs: number;
 
 	readonly #fetch: NhlFetch;
@@ -53,6 +60,8 @@ export class NhlApiClient {
 		this.timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
 		this.games = createGamesDomain(this);
 		this.players = createPlayersDomain(this);
+		this.schedule = createScheduleDomain(this);
+		this.seasons = createSeasonsDomain(this);
 	}
 
 	async request<TSchema extends z.ZodType>(
