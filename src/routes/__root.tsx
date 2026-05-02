@@ -4,6 +4,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import {
 	createRootRouteWithContext,
 	HeadContent,
+	Link,
 	Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
@@ -63,13 +64,14 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 					<TanStackQueryProvider>
 						<header className="fixed inset-x-0 top-0 z-50">
 							<div className="relative flex h-16 items-center px-4 sm:px-6 lg:px-8">
-								<a
-									href="/"
+								<Link
+									to="/"
+									preload="intent"
 									className="text-xl font-bold tracking-tight no-underline"
 									aria-label="Puckwise home"
 								>
 									PUCK<span className="text-primary">WISE</span>
-								</a>
+								</Link>
 								<div className="absolute right-4 rounded-full border border-primary/20 bg-background/80 px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur sm:left-1/2 sm:right-auto sm:-translate-x-1/2">
 									<span className="text-primary">Early preview</span>
 									<span className="hidden sm:inline"> · Work in progress</span>
