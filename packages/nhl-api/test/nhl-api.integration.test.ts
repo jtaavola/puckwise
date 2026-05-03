@@ -104,11 +104,11 @@ describe("NHL API live integration", () => {
 
 			expect(gameLog.seasonId).toBe(20232024);
 			expect(gameLog.gameTypeId).toBe(2);
-			expect(gameLog.gameLog.length).toBeGreaterThan(0);
-			expect(gameLog.gameLog[0]).toMatchObject({
+			expect(gameLog.gameLog?.length).toBeGreaterThan(0);
+			expect(gameLog.gameLog?.[0]).toMatchObject({
 				teamAbbrev: "EDM",
 			});
-			expect(gameLog.gameLog[0]?.gameId?.toString()).toMatch(/^2023/);
+			expect(gameLog.gameLog?.[0]?.gameId?.toString()).toMatch(/^2023/);
 		},
 		20_000,
 	);

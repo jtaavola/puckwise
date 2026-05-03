@@ -1,6 +1,5 @@
 import { z } from "zod";
 import {
-	gameIdSchema,
 	gameTypeSchema,
 	localeStringSchema,
 	paginationSchema,
@@ -388,28 +387,49 @@ export const playerLandingSchema = z.looseObject({
 	currentTeamRoster: z.array(currentTeamRosterItemSchema).optional(),
 });
 
-export const playerGameLogGameSchema = z.looseObject({
-	assists: nullableNumberSchema,
-	gameDate: z.string().optional(),
-	gameId: gameIdSchema.optional(),
-	gameTypeId: gameTypeSchema.optional(),
-	goals: nullableNumberSchema,
+const playerStatsSeasonsItemSchema = z.looseObject({
+	season: z.number(),
+	gameTypes: z.array(z.number()).optional(),
+});
+
+const gameLogItemCommonNameSchema = z.looseObject({
+	default: z.string().optional(),
+});
+
+const gameLogItemOpponentCommonNameSchema = z.looseObject({
+	default: z.string().optional(),
+	fr: z.string().optional(),
+});
+
+const gameLogItemSchema = z.looseObject({
+	gameId: z.number(),
+	teamAbbrev: z.string().optional(),
 	homeRoadFlag: z.string().optional(),
-	opponentAbbrev: teamAbbrevSchema.optional(),
-	pim: nullableNumberSchema,
-	plusMinus: nullableNumberSchema,
-	points: nullableNumberSchema,
-	season: seasonIdSchema.optional(),
-	shifts: nullableNumberSchema,
-	shots: nullableNumberSchema,
-	teamAbbrev: teamAbbrevSchema.optional(),
+	gameDate: z.string().optional(),
+	goals: z.number().optional(),
+	assists: z.number().optional(),
+	commonName: gameLogItemCommonNameSchema.optional(),
+	opponentCommonName: gameLogItemOpponentCommonNameSchema.optional(),
+	points: z.number().optional(),
+	plusMinus: z.number().optional(),
+	powerPlayGoals: z.number().optional(),
+	powerPlayPoints: z.number().optional(),
+	gameWinningGoals: z.number().optional(),
+	otGoals: z.number().optional(),
+	shots: z.number().optional(),
+	shifts: z.number().optional(),
+	shorthandedGoals: z.number().optional(),
+	shorthandedPoints: z.number().optional(),
+	opponentAbbrev: z.string().optional(),
+	pim: z.number().optional(),
 	toi: z.string().optional(),
 });
 
 export const playerGameLogSchema = z.looseObject({
-	gameLog: z.array(playerGameLogGameSchema),
-	seasonId: seasonIdSchema.optional(),
-	gameTypeId: gameTypeSchema.optional(),
+	seasonId: z.number(),
+	gameTypeId: z.number(),
+	playerStatsSeasons: z.array(playerStatsSeasonsItemSchema).optional(),
+	gameLog: z.array(gameLogItemSchema).optional(),
 });
 
 export const playerSpotlightItemSchema = playerIdentitySchema.extend({
@@ -551,7 +571,6 @@ export const statsMilestonesResponseSchema = z
 
 export type GameType = z.infer<typeof gameTypeSchema>;
 export type PlayerGameLog = z.infer<typeof playerGameLogSchema>;
-export type PlayerGameLogGame = z.infer<typeof playerGameLogGameSchema>;
 export type PlayerIdentity = z.infer<typeof playerIdentitySchema>;
 export type PlayerLanding = z.infer<typeof playerLandingSchema>;
 export type PlayerSpotlight = z.infer<typeof playerSpotlightSchema>;
