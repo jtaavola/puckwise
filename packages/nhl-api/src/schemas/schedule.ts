@@ -22,7 +22,8 @@ export const schedulePlayerSummarySchema = z
 
 export const scheduleTeamSummarySchema = z
 	.object({
-		id: z.number().int().positive().optional(),
+		// The schedule endpoint can return `id: -1` for placeholder/TBD teams.
+		id: z.number().int().optional(),
 		abbrev: teamAbbrevSchema.optional(),
 		commonName: localeStringSchema.or(z.string()).optional(),
 		placeName: localeStringSchema.or(z.string()).optional(),
