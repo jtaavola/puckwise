@@ -28,6 +28,7 @@ export {
 } from "./domains/games.js";
 export {
 	createPlayersDomain,
+	type PlayerGameLogNowOptions,
 	type PlayerGameLogParams,
 	type PlayerInfoOptions,
 	type PlayerLandingOptions,

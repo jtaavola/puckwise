@@ -31,6 +31,10 @@ export type PlayerGameLogParams = NhlApiDomainRequestOptions & {
 	lang?: string;
 };
 
+export type PlayerGameLogNowOptions = NhlApiDomainRequestOptions & {
+	lang?: string;
+};
+
 export type PlayerSearchParams = StatsApiListParams & {
 	active?: boolean;
 	currentTeamId?: number;
@@ -92,6 +96,16 @@ export function createPlayersDomain(client: NhlApiClient) {
 					season: parseSeason(params.season),
 				},
 				query: pickLangQuery(params),
+				schema: playerGameLogSchema,
+			});
+		},
+
+		/** Retrieve the game log for a specific player as of the current moment. */
+		getGameLogNow(playerId: number, options: PlayerGameLogNowOptions = {}) {
+			return client.web("/player/{playerId}/game-log/now", {
+				...pickRequestOptions(options),
+				pathParams: { playerId: parsePlayerId(playerId) },
+				query: pickLangQuery(options),
 				schema: playerGameLogSchema,
 			});
 		},
