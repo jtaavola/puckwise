@@ -44,6 +44,17 @@ describe("schedule and season clients", () => {
 			);
 		});
 
+		it("accepts placeholder teams in the current league schedule", async () => {
+			const fixture = structuredClone(leagueScheduleFixture);
+			fixture.gameWeek[0].games[0].awayTeam.id = -1;
+			const { fetch } = recordingFetch(fixture);
+			const client = createNhlApiClient({ fetch });
+
+			const schedule = await client.schedule.getLeagueSchedule();
+
+			expect(schedule.gameWeek[0]?.games[0]?.awayTeam?.id).toBe(-1);
+		});
+
 		it("builds the dated league schedule URL", async () => {
 			const { fetch, requests } = recordingFetch(historicalScheduleFixture);
 			const client = createNhlApiClient({ fetch });
