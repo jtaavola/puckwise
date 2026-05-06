@@ -60,6 +60,17 @@ describe("players domain client", () => {
 			);
 		});
 
+		it("builds the player game log 'now' URL", async () => {
+			const { fetch, requests } = recordingFetch(playerGameLogFixture);
+			const client = createNhlApiClient({ fetch });
+
+			await client.players.getGameLogNow(8478402);
+
+			expect(requests[0]?.toString()).toBe(
+				"https://api-web.nhle.com/v1/player/8478402/game-log/now",
+			);
+		});
+
 		it("builds the player spotlight URL", async () => {
 			const { fetch, requests } = recordingFetch(playerSpotlightFixture);
 			const client = createNhlApiClient({ fetch });

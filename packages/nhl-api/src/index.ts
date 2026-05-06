@@ -28,6 +28,7 @@ export {
 } from "./domains/games.js";
 export {
 	createPlayersDomain,
+	type PlayerGameLogNowOptions,
 	type PlayerGameLogParams,
 	type PlayerInfoOptions,
 	type PlayerLandingOptions,
@@ -146,7 +147,6 @@ export {
 	oddsResponseSchema,
 	type Pagination,
 	type PlayerGameLog,
-	type PlayerGameLogGame,
 	type PlayerIdentity,
 	type PlayerLanding,
 	type PlayerSpotlight,
@@ -156,7 +156,6 @@ export {
 	type Prospects,
 	paginationSchema,
 	parseNhlApiResponse,
-	playerGameLogGameSchema,
 	playerGameLogSchema,
 	playerHandednessSchema,
 	playerIdentitySchema,

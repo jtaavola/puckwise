@@ -1,6 +1,5 @@
 import { z } from "zod";
 import {
-	gameIdSchema,
 	gameTypeSchema,
 	localeStringSchema,
 	paginationSchema,
@@ -15,145 +14,436 @@ export const playerIdSchema = z.number().int().positive();
 export const playerPositionCodeSchema = z.enum(["C", "L", "R", "D", "G"]);
 export const playerHandednessSchema = z.enum(["L", "R"]).or(z.string().min(1));
 
-export const playerIdentitySchema = z
-	.object({
-		playerId: playerIdSchema.optional(),
-		id: playerIdSchema.optional(),
-		firstName: localeStringSchema.or(z.string()).optional(),
-		lastName: localeStringSchema.or(z.string()).optional(),
-		name: localeStringSchema.or(z.string()).optional(),
-		fullName: z.string().optional(),
-		sweaterNumber: z.number().int().positive().nullable().optional(),
-		positionCode: playerPositionCodeSchema.or(z.string()).optional(),
-		headshot: z.string().url().optional(),
-		heroImage: z.string().url().optional(),
-		shootsCatches: playerHandednessSchema.optional(),
-	})
-	.passthrough();
+export const playerIdentitySchema = z.looseObject({
+	playerId: playerIdSchema.optional(),
+	id: playerIdSchema.optional(),
+	firstName: localeStringSchema.or(z.string()).optional(),
+	lastName: localeStringSchema.or(z.string()).optional(),
+	name: localeStringSchema.or(z.string()).optional(),
+	fullName: z.string().optional(),
+	sweaterNumber: z.number().int().positive().nullable().optional(),
+	positionCode: playerPositionCodeSchema.or(z.string()).optional(),
+	headshot: z.string().url().optional(),
+	heroImage: z.string().url().optional(),
+	shootsCatches: playerHandednessSchema.optional(),
+});
 
-export const playerTeamSchema = z
-	.object({
-		id: z.number().int().positive().optional(),
-		teamId: z.number().int().positive().optional(),
-		abbrev: teamAbbrevSchema.optional(),
-		triCode: teamAbbrevSchema.optional(),
-		name: localeStringSchema.or(z.string()).optional(),
-		placeName: localeStringSchema.or(z.string()).optional(),
-		logo: z.string().url().optional(),
-		darkLogo: z.string().url().optional(),
-	})
-	.passthrough();
+export const playerTeamSchema = z.looseObject({
+	id: z.number().int().positive().optional(),
+	teamId: z.number().int().positive().optional(),
+	abbrev: teamAbbrevSchema.optional(),
+	triCode: teamAbbrevSchema.optional(),
+	name: localeStringSchema.or(z.string()).optional(),
+	placeName: localeStringSchema.or(z.string()).optional(),
+	logo: z.string().url().optional(),
+	darkLogo: z.string().url().optional(),
+});
 
-export const skaterSeasonTotalSchema = z
-	.object({
-		assists: nullableNumberSchema,
-		gameTypeId: gameTypeSchema.optional(),
-		gamesPlayed: nullableNumberSchema,
-		goals: nullableNumberSchema,
-		leagueAbbrev: z.string().optional(),
-		pim: nullableNumberSchema,
-		plusMinus: nullableNumberSchema,
-		points: nullableNumberSchema,
-		season: seasonIdSchema.optional(),
-		sequence: z.number().int().optional(),
-		shootingPctg: nullableNumberSchema,
-		teamName: localeStringSchema.or(z.string()).optional(),
-	})
-	.passthrough();
+export const skaterSeasonTotalSchema = z.looseObject({
+	assists: nullableNumberSchema,
+	gameTypeId: gameTypeSchema.optional(),
+	gamesPlayed: nullableNumberSchema,
+	goals: nullableNumberSchema,
+	leagueAbbrev: z.string().optional(),
+	pim: nullableNumberSchema,
+	plusMinus: nullableNumberSchema,
+	points: nullableNumberSchema,
+	season: seasonIdSchema.optional(),
+	sequence: z.number().int().optional(),
+	shootingPctg: nullableNumberSchema,
+	teamName: localeStringSchema.or(z.string()).optional(),
+});
 
-export const goalieSeasonTotalSchema = z
-	.object({
-		gameTypeId: gameTypeSchema.optional(),
-		gamesPlayed: nullableNumberSchema,
-		gaa: nullableNumberSchema,
-		leagueAbbrev: z.string().optional(),
-		losses: nullableNumberSchema,
-		savePctg: nullableNumberSchema,
-		season: seasonIdSchema.optional(),
-		sequence: z.number().int().optional(),
-		shutouts: nullableNumberSchema,
-		teamName: localeStringSchema.or(z.string()).optional(),
-		ties: nullableNumberSchema,
-		wins: nullableNumberSchema,
-	})
-	.passthrough();
+export const goalieSeasonTotalSchema = z.looseObject({
+	gameTypeId: gameTypeSchema.optional(),
+	gamesPlayed: nullableNumberSchema,
+	gaa: nullableNumberSchema,
+	leagueAbbrev: z.string().optional(),
+	losses: nullableNumberSchema,
+	savePctg: nullableNumberSchema,
+	season: seasonIdSchema.optional(),
+	sequence: z.number().int().optional(),
+	shutouts: nullableNumberSchema,
+	teamName: localeStringSchema.or(z.string()).optional(),
+	ties: nullableNumberSchema,
+	wins: nullableNumberSchema,
+});
 
-export const playerLandingSchema = playerIdentitySchema
-	.extend({
-		birthCity: localeStringSchema.or(z.string()).optional(),
-		birthCountry: z.string().optional(),
-		birthDate: z.string().optional(),
-		birthStateProvince: localeStringSchema.or(z.string()).optional(),
-		careerTotals: z.record(z.string(), z.unknown()).optional(),
-		currentTeamAbbrev: teamAbbrevSchema.optional(),
-		currentTeamId: z.number().int().positive().optional(),
-		currentTeamRoster: z.array(playerIdentitySchema).optional(),
-		draftDetails: z.record(z.string(), z.unknown()).optional(),
-		featuredStats: z.record(z.string(), z.unknown()).optional(),
-		fullTeamName: localeStringSchema.or(z.string()).optional(),
-		heightInCentimeters: nullableNumberSchema,
-		heightInInches: nullableNumberSchema,
-		position: playerPositionCodeSchema.or(z.string()).optional(),
-		seasonTotals: z
-			.array(skaterSeasonTotalSchema.or(goalieSeasonTotalSchema))
-			.optional(),
-		shopLink: z.string().optional(),
-		teamCommonName: localeStringSchema.or(z.string()).optional(),
-		teamLogo: z.string().url().optional(),
-		teamPlaceNameWithPreposition: localeStringSchema.or(z.string()).optional(),
-		weightInKilograms: nullableNumberSchema,
-		weightInPounds: nullableNumberSchema,
-	})
-	.passthrough()
-	.transform((player) => ({
-		...player,
-		positionCode: player.positionCode ?? player.position,
-	}));
+const fullTeamNameSchema = z.looseObject({
+	default: z.string().optional(),
+	fr: z.string().optional(),
+});
 
-export const playerGameLogGameSchema = z
-	.object({
-		assists: nullableNumberSchema,
-		gameDate: z.string().optional(),
-		gameId: gameIdSchema.optional(),
-		gameTypeId: gameTypeSchema.optional(),
-		goals: nullableNumberSchema,
-		homeRoadFlag: z.string().optional(),
-		opponentAbbrev: teamAbbrevSchema.optional(),
-		pim: nullableNumberSchema,
-		plusMinus: nullableNumberSchema,
-		points: nullableNumberSchema,
-		season: seasonIdSchema.optional(),
-		shifts: nullableNumberSchema,
-		shots: nullableNumberSchema,
-		teamAbbrev: teamAbbrevSchema.optional(),
-		toi: z.string().optional(),
-	})
-	.passthrough();
+const teamCommonNameSchema = z.looseObject({
+	default: z.string().optional(),
+});
 
-export const playerGameLogSchema = z
-	.object({
-		gameLog: z.array(playerGameLogGameSchema),
-		seasonId: seasonIdSchema.optional(),
-		gameTypeId: gameTypeSchema.optional(),
-	})
-	.passthrough();
+const teamPlaceNameWithPrepositionSchema = z.looseObject({
+	default: z.string().optional(),
+	fr: z.string().optional(),
+});
 
-export const playerSpotlightItemSchema = playerIdentitySchema
-	.extend({
-		team: playerTeamSchema.optional(),
-		teamAbbrev: teamAbbrevSchema.optional(),
-		teamId: z.number().int().positive().optional(),
-	})
-	.passthrough();
+const firstNameSchema = z.looseObject({
+	default: z.string(),
+});
 
-export const playerSpotlightSchema = z
-	.object({
-		players: z.array(playerSpotlightItemSchema),
-	})
-	.passthrough();
+const lastNameSchema = z.looseObject({
+	default: z.string(),
+});
+
+const birthCitySchema = z.looseObject({
+	default: z.string().optional(),
+});
+
+const birthStateProvinceSchema = z.looseObject({
+	default: z.string().optional(),
+});
+
+const draftDetailsSchema = z.looseObject({
+	year: z.number().optional(),
+	teamAbbrev: z.string().optional(),
+	round: z.number().optional(),
+	pickInRound: z.number().optional(),
+	overallPick: z.number().optional(),
+});
+
+const featuredStatsRegularSeasonSubSeasonSchema = z.looseObject({
+	assists: z.number().optional(),
+	gameWinningGoals: z.number().optional(),
+	gamesPlayed: z.number().optional(),
+	goals: z.number().optional(),
+	otGoals: z.number().optional(),
+	pim: z.number().optional(),
+	plusMinus: z.number().optional(),
+	points: z.number().optional(),
+	powerPlayGoals: z.number().optional(),
+	powerPlayPoints: z.number().optional(),
+	shootingPctg: z.number().optional(),
+	shorthandedGoals: z.number().optional(),
+	shorthandedPoints: z.number().optional(),
+	shots: z.number().optional(),
+});
+
+const featuredStatsRegularSeasonCareerSchema = z.looseObject({
+	assists: z.number().optional(),
+	gameWinningGoals: z.number().optional(),
+	gamesPlayed: z.number().optional(),
+	goals: z.number().optional(),
+	otGoals: z.number().optional(),
+	pim: z.number().optional(),
+	plusMinus: z.number().optional(),
+	points: z.number().optional(),
+	powerPlayGoals: z.number().optional(),
+	powerPlayPoints: z.number().optional(),
+	shootingPctg: z.number().optional(),
+	shorthandedGoals: z.number().optional(),
+	shorthandedPoints: z.number().optional(),
+	shots: z.number().optional(),
+});
+
+const featuredStatsRegularSeasonSchema = z.looseObject({
+	subSeason: featuredStatsRegularSeasonSubSeasonSchema.optional(),
+	career: featuredStatsRegularSeasonCareerSchema.optional(),
+});
+
+const featuredStatsPlayoffsSubSeasonSchema = z.looseObject({
+	assists: z.number().optional(),
+	gameWinningGoals: z.number().optional(),
+	gamesPlayed: z.number().optional(),
+	goals: z.number().optional(),
+	otGoals: z.number().optional(),
+	pim: z.number().optional(),
+	plusMinus: z.number().optional(),
+	points: z.number().optional(),
+	powerPlayGoals: z.number().optional(),
+	powerPlayPoints: z.number().optional(),
+	shootingPctg: z.number().optional(),
+	shorthandedGoals: z.number().optional(),
+	shorthandedPoints: z.number().optional(),
+	shots: z.number().optional(),
+});
+
+const featuredStatsPlayoffsCareerSchema = z.looseObject({
+	assists: z.number().optional(),
+	gameWinningGoals: z.number().optional(),
+	gamesPlayed: z.number().optional(),
+	goals: z.number().optional(),
+	otGoals: z.number().optional(),
+	pim: z.number().optional(),
+	plusMinus: z.number().optional(),
+	points: z.number().optional(),
+	powerPlayGoals: z.number().optional(),
+	powerPlayPoints: z.number().optional(),
+	shootingPctg: z.number().optional(),
+	shorthandedGoals: z.number().optional(),
+	shorthandedPoints: z.number().optional(),
+	shots: z.number().optional(),
+});
+
+const featuredStatsPlayoffsSchema = z.looseObject({
+	subSeason: featuredStatsPlayoffsSubSeasonSchema.optional(),
+	career: featuredStatsPlayoffsCareerSchema.optional(),
+});
+
+const featuredStatsSchema = z.looseObject({
+	season: z.number().optional(),
+	regularSeason: featuredStatsRegularSeasonSchema.optional(),
+	playoffs: featuredStatsPlayoffsSchema.optional(),
+});
+
+const careerTotalsRegularSeasonSchema = z.looseObject({
+	assists: z.number().optional(),
+	avgToi: z.string().optional(),
+	faceoffWinningPctg: z.number().optional(),
+	gameWinningGoals: z.number().optional(),
+	gamesPlayed: z.number().optional(),
+	goals: z.number().optional(),
+	otGoals: z.number().optional(),
+	pim: z.number().optional(),
+	plusMinus: z.number().optional(),
+	points: z.number().optional(),
+	powerPlayGoals: z.number().optional(),
+	powerPlayPoints: z.number().optional(),
+	shootingPctg: z.number().optional(),
+	shorthandedGoals: z.number().optional(),
+	shorthandedPoints: z.number().optional(),
+	shots: z.number().optional(),
+});
+
+const careerTotalsPlayoffsSchema = z.looseObject({
+	assists: z.number().optional(),
+	avgToi: z.string().optional(),
+	faceoffWinningPctg: z.number().optional(),
+	gameWinningGoals: z.number().optional(),
+	gamesPlayed: z.number().optional(),
+	goals: z.number().optional(),
+	otGoals: z.number().optional(),
+	pim: z.number().optional(),
+	plusMinus: z.number().optional(),
+	points: z.number().optional(),
+	powerPlayGoals: z.number().optional(),
+	powerPlayPoints: z.number().optional(),
+	shootingPctg: z.number().optional(),
+	shorthandedGoals: z.number().optional(),
+	shorthandedPoints: z.number().optional(),
+	shots: z.number().optional(),
+});
+
+const careerTotalsSchema = z.looseObject({
+	regularSeason: careerTotalsRegularSeasonSchema.optional(),
+	playoffs: careerTotalsPlayoffsSchema.optional(),
+});
+
+const last5GamesItemSchema = z.looseObject({
+	assists: z.number().optional(),
+	gameDate: z.string().optional(),
+	gameId: z.number().optional(),
+	gameTypeId: z.number().optional(),
+	goals: z.number().optional(),
+	homeRoadFlag: z.string().optional(),
+	opponentAbbrev: z.string().optional(),
+	pim: z.number().optional(),
+	plusMinus: z.number().optional(),
+	points: z.number().optional(),
+	powerPlayGoals: z.number().optional(),
+	shifts: z.number().optional(),
+	shorthandedGoals: z.number().optional(),
+	shots: z.number().optional(),
+	teamAbbrev: z.string().optional(),
+	toi: z.string().optional(),
+});
+
+const seasonTotalsItemTeamNameSchema = z.looseObject({
+	default: z.string().optional(),
+	cs: z.string().optional(),
+	de: z.string().optional(),
+	es: z.string().optional(),
+	fi: z.string().optional(),
+	sk: z.string().optional(),
+	sv: z.string().optional(),
+	fr: z.string().optional(),
+});
+
+const seasonTotalsItemTeamCommonNameSchema = z.looseObject({
+	default: z.string().optional(),
+	cs: z.string().optional(),
+	de: z.string().optional(),
+	es: z.string().optional(),
+	fi: z.string().optional(),
+	sk: z.string().optional(),
+	sv: z.string().optional(),
+});
+
+const seasonTotalsItemTeamPlaceNameWithPrepositionSchema = z.looseObject({
+	default: z.string().optional(),
+	fr: z.string().optional(),
+});
+
+const seasonTotalsItemSchema = z.looseObject({
+	assists: z.number().optional(),
+	gameTypeId: z.number().optional(),
+	gamesPlayed: z.number().optional(),
+	goals: z.number().optional(),
+	leagueAbbrev: z.string().optional(),
+	pim: z.number().optional(),
+	points: z.number().optional(),
+	season: z.number().optional(),
+	sequence: z.number().optional(),
+	teamName: seasonTotalsItemTeamNameSchema.optional(),
+	gameWinningGoals: z.number().optional(),
+	plusMinus: z.number().optional(),
+	powerPlayGoals: z.number().optional(),
+	shorthandedGoals: z.number().optional(),
+	shots: z.number().optional(),
+	teamCommonName: seasonTotalsItemTeamCommonNameSchema.optional(),
+	teamPlaceNameWithPreposition:
+		seasonTotalsItemTeamPlaceNameWithPrepositionSchema.optional(),
+	avgToi: z.string().optional(),
+	faceoffWinningPctg: z.number().optional(),
+	otGoals: z.number().optional(),
+	powerPlayPoints: z.number().optional(),
+	shootingPctg: z.number().optional(),
+	shorthandedPoints: z.number().optional(),
+});
+
+const awardsItemTrophySchema = z.looseObject({
+	default: z.string().optional(),
+	fr: z.string().optional(),
+});
+
+const awardsItemSeasonsItemSchema = z.looseObject({
+	assists: z.number().optional(),
+	blockedShots: z.number().optional(),
+	gameTypeId: z.number().optional(),
+	gamesPlayed: z.number().optional(),
+	goals: z.number().optional(),
+	hits: z.number().optional(),
+	pim: z.number().optional(),
+	plusMinus: z.number().optional(),
+	points: z.number().optional(),
+	seasonId: z.number().optional(),
+});
+
+const awardsItemSchema = z.looseObject({
+	trophy: awardsItemTrophySchema.optional(),
+	seasons: z.array(awardsItemSeasonsItemSchema).optional(),
+});
+
+const currentTeamRosterItemLastNameSchema = z.looseObject({
+	default: z.string().optional(),
+});
+
+const currentTeamRosterItemFirstNameSchema = z.looseObject({
+	default: z.string().optional(),
+	cs: z.string().optional(),
+	fi: z.string().optional(),
+	sk: z.string().optional(),
+});
+
+const currentTeamRosterItemSchema = z.looseObject({
+	playerId: z.number().optional(),
+	lastName: currentTeamRosterItemLastNameSchema.optional(),
+	firstName: currentTeamRosterItemFirstNameSchema.optional(),
+	playerSlug: z.string().optional(),
+});
+
+export const playerLandingSchema = z.looseObject({
+	playerId: z.number(),
+	isActive: z.boolean().optional(),
+	currentTeamId: z.number().optional(),
+	currentTeamAbbrev: z.string().optional(),
+	fullTeamName: fullTeamNameSchema.optional(),
+	teamCommonName: teamCommonNameSchema.optional(),
+	teamPlaceNameWithPreposition: teamPlaceNameWithPrepositionSchema.optional(),
+	firstName: firstNameSchema,
+	lastName: lastNameSchema,
+	badges: z.array(z.unknown()).optional(),
+	teamLogo: z.string().optional(),
+	sweaterNumber: z.number().optional(),
+	position: z.string().optional(),
+	headshot: z.string().optional(),
+	heroImage: z.string().optional(),
+	heightInInches: z.number().optional(),
+	heightInCentimeters: z.number().optional(),
+	weightInPounds: z.number().optional(),
+	weightInKilograms: z.number().optional(),
+	birthDate: z.string().optional(),
+	birthCity: birthCitySchema.optional(),
+	birthStateProvince: birthStateProvinceSchema.optional(),
+	birthCountry: z.string().optional(),
+	shootsCatches: z.string().optional(),
+	draftDetails: draftDetailsSchema.optional(),
+	playerSlug: z.string().optional(),
+	inTop100AllTime: z.number().optional(),
+	inHHOF: z.number().optional(),
+	featuredStats: featuredStatsSchema.optional(),
+	careerTotals: careerTotalsSchema.optional(),
+	shopLink: z.string().optional(),
+	twitterLink: z.string().optional(),
+	watchLink: z.string().optional(),
+	last5Games: z.array(last5GamesItemSchema).optional(),
+	seasonTotals: z.array(seasonTotalsItemSchema).optional(),
+	awards: z.array(awardsItemSchema).optional(),
+	currentTeamRoster: z.array(currentTeamRosterItemSchema).optional(),
+});
+
+const playerStatsSeasonsItemSchema = z.looseObject({
+	season: z.number(),
+	gameTypes: z.array(z.number()).optional(),
+});
+
+const gameLogItemCommonNameSchema = z.looseObject({
+	default: z.string().optional(),
+});
+
+const gameLogItemOpponentCommonNameSchema = z.looseObject({
+	default: z.string().optional(),
+	fr: z.string().optional(),
+});
+
+const gameLogItemSchema = z.looseObject({
+	gameId: z.number(),
+	teamAbbrev: z.string().optional(),
+	homeRoadFlag: z.string().optional(),
+	gameDate: z.string().optional(),
+	goals: z.number().optional(),
+	assists: z.number().optional(),
+	commonName: gameLogItemCommonNameSchema.optional(),
+	opponentCommonName: gameLogItemOpponentCommonNameSchema.optional(),
+	points: z.number().optional(),
+	plusMinus: z.number().optional(),
+	powerPlayGoals: z.number().optional(),
+	powerPlayPoints: z.number().optional(),
+	gameWinningGoals: z.number().optional(),
+	otGoals: z.number().optional(),
+	shots: z.number().optional(),
+	shifts: z.number().optional(),
+	shorthandedGoals: z.number().optional(),
+	shorthandedPoints: z.number().optional(),
+	opponentAbbrev: z.string().optional(),
+	pim: z.number().optional(),
+	toi: z.string().optional(),
+});
+
+export const playerGameLogSchema = z.looseObject({
+	seasonId: z.number(),
+	gameTypeId: z.number(),
+	playerStatsSeasons: z.array(playerStatsSeasonsItemSchema).optional(),
+	gameLog: z.array(gameLogItemSchema).optional(),
+});
+
+export const playerSpotlightItemSchema = playerIdentitySchema.extend({
+	team: playerTeamSchema.optional(),
+	teamAbbrev: teamAbbrevSchema.optional(),
+	teamId: z.number().int().positive().optional(),
+});
+
+export const playerSpotlightSchema = z.looseObject({
+	players: z.array(playerSpotlightItemSchema),
+});
 
 export const statsPlayerInfoSchema = z
-	.object({
+	.looseObject({
 		birthCity: nullableStringSchema,
 		birthCountryCode: nullableStringSchema,
 		birthDate: nullableStringSchema,
@@ -169,7 +459,6 @@ export const statsPlayerInfoSchema = z
 		positionCode: playerPositionCodeSchema.or(z.string()).optional(),
 		shootsCatches: nullableStringSchema,
 	})
-	.passthrough()
 	.refine(
 		(player) => player.playerId !== undefined || player.id !== undefined,
 		{
@@ -182,76 +471,68 @@ export const statsPlayerInfoSchema = z
 		playerId: player.playerId ?? player.id,
 	}));
 
-export const statsSkaterStatSchema = z
-	.object({
-		assists: nullableNumberSchema,
-		evGoals: nullableNumberSchema,
-		evPoints: nullableNumberSchema,
-		gameTypeId: gameTypeSchema.optional(),
-		gamesPlayed: nullableNumberSchema,
-		goals: nullableNumberSchema,
-		lastName: z.string().optional(),
-		playerId: playerIdSchema.optional(),
-		playerName: z.string().optional(),
-		points: nullableNumberSchema,
-		positionCode: playerPositionCodeSchema.or(z.string()).optional(),
-		ppGoals: nullableNumberSchema,
-		ppPoints: nullableNumberSchema,
-		seasonId: seasonIdSchema.optional(),
-		shootingPct: nullableNumberSchema,
-		shots: nullableNumberSchema,
-		teamAbbrevs: z.string().optional(),
-		teamId: nullableNumberSchema,
-		timeOnIcePerGame: nullableNumberSchema,
-	})
-	.passthrough();
+export const statsSkaterStatSchema = z.looseObject({
+	assists: nullableNumberSchema,
+	evGoals: nullableNumberSchema,
+	evPoints: nullableNumberSchema,
+	gameTypeId: gameTypeSchema.optional(),
+	gamesPlayed: nullableNumberSchema,
+	goals: nullableNumberSchema,
+	lastName: z.string().optional(),
+	playerId: playerIdSchema.optional(),
+	playerName: z.string().optional(),
+	points: nullableNumberSchema,
+	positionCode: playerPositionCodeSchema.or(z.string()).optional(),
+	ppGoals: nullableNumberSchema,
+	ppPoints: nullableNumberSchema,
+	seasonId: seasonIdSchema.optional(),
+	shootingPct: nullableNumberSchema,
+	shots: nullableNumberSchema,
+	teamAbbrevs: z.string().optional(),
+	teamId: nullableNumberSchema,
+	timeOnIcePerGame: nullableNumberSchema,
+});
 
-export const statsGoalieStatSchema = z
-	.object({
-		gameTypeId: gameTypeSchema.optional(),
-		gamesPlayed: nullableNumberSchema,
-		gaa: nullableNumberSchema,
-		goalsAgainst: nullableNumberSchema,
-		lastName: z.string().optional(),
-		losses: nullableNumberSchema,
-		otLosses: nullableNumberSchema,
-		playerId: playerIdSchema.optional(),
-		playerName: z.string().optional(),
-		savePct: nullableNumberSchema,
-		seasonId: seasonIdSchema.optional(),
-		shotsAgainst: nullableNumberSchema,
-		shutouts: nullableNumberSchema,
-		teamAbbrevs: z.string().optional(),
-		teamId: nullableNumberSchema,
-		wins: nullableNumberSchema,
-	})
-	.passthrough();
+export const statsGoalieStatSchema = z.looseObject({
+	gameTypeId: gameTypeSchema.optional(),
+	gamesPlayed: nullableNumberSchema,
+	gaa: nullableNumberSchema,
+	goalsAgainst: nullableNumberSchema,
+	lastName: z.string().optional(),
+	losses: nullableNumberSchema,
+	otLosses: nullableNumberSchema,
+	playerId: playerIdSchema.optional(),
+	playerName: z.string().optional(),
+	savePct: nullableNumberSchema,
+	seasonId: seasonIdSchema.optional(),
+	shotsAgainst: nullableNumberSchema,
+	shutouts: nullableNumberSchema,
+	teamAbbrevs: z.string().optional(),
+	teamId: nullableNumberSchema,
+	wins: nullableNumberSchema,
+});
 
-export const statsLeaderSchema = z
-	.object({
-		firstName: z.string().optional(),
-		lastName: z.string().optional(),
-		playerId: playerIdSchema.optional(),
-		playerName: z.string().optional(),
-		positionCode: playerPositionCodeSchema.or(z.string()).optional(),
-		rank: z.number().int().positive().optional(),
-		teamAbbrev: teamAbbrevSchema.optional(),
-		teamId: z.number().int().positive().optional(),
-		value: z.number().optional(),
-	})
-	.passthrough();
+export const statsLeaderSchema = z.looseObject({
+	firstName: z.string().optional(),
+	lastName: z.string().optional(),
+	playerId: playerIdSchema.optional(),
+	playerName: z.string().optional(),
+	positionCode: playerPositionCodeSchema.or(z.string()).optional(),
+	rank: z.number().int().positive().optional(),
+	teamAbbrev: teamAbbrevSchema.optional(),
+	teamId: z.number().int().positive().optional(),
+	value: z.number().optional(),
+});
 
-export const statsMilestoneSchema = z
-	.object({
-		achievementDate: z.string().nullable().optional(),
-		firstName: z.string().optional(),
-		lastName: z.string().optional(),
-		milestone: z.string().optional(),
-		milestoneAmount: nullableNumberSchema,
-		playerId: playerIdSchema.optional(),
-		teamAbbrev: teamAbbrevSchema.optional(),
-	})
-	.passthrough();
+export const statsMilestoneSchema = z.looseObject({
+	achievementDate: z.string().nullable().optional(),
+	firstName: z.string().optional(),
+	lastName: z.string().optional(),
+	milestone: z.string().optional(),
+	milestoneAmount: nullableNumberSchema,
+	playerId: playerIdSchema.optional(),
+	teamAbbrev: teamAbbrevSchema.optional(),
+});
 
 export const statsPlayerInfoResponseSchema = z
 	.object({
@@ -290,7 +571,6 @@ export const statsMilestonesResponseSchema = z
 
 export type GameType = z.infer<typeof gameTypeSchema>;
 export type PlayerGameLog = z.infer<typeof playerGameLogSchema>;
-export type PlayerGameLogGame = z.infer<typeof playerGameLogGameSchema>;
 export type PlayerIdentity = z.infer<typeof playerIdentitySchema>;
 export type PlayerLanding = z.infer<typeof playerLandingSchema>;
 export type PlayerSpotlight = z.infer<typeof playerSpotlightSchema>;
