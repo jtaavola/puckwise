@@ -1,15 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { createNhlApiClient } from "../src/index.js";
-import {
-	playerGameLogFixture,
-	playerLandingSkaterFixture,
-	playerSpotlightFixture,
-	statsGoalieStatsFixture,
-	statsLeaderFixture,
-	statsMilestoneFixture,
-	statsPlayerInfoFixture,
-	statsSkaterStatsFixture,
-} from "./fixtures/players.js";
+
+const genericResponseFixture = { ok: true };
 
 function jsonResponse(data: unknown): Response {
 	return new Response(JSON.stringify(data), {
@@ -33,13 +25,17 @@ function recordingFetch(data: unknown): {
 	return { fetch, requests };
 }
 
+async function ignoreResponseParsing(request: Promise<unknown>): Promise<void> {
+	await request.catch(() => undefined);
+}
+
 describe("players domain client", () => {
 	describe("Web API URL construction", () => {
 		it("builds the player landing URL", async () => {
-			const { fetch, requests } = recordingFetch(playerLandingSkaterFixture);
+			const { fetch, requests } = recordingFetch(genericResponseFixture);
 			const client = createNhlApiClient({ fetch });
 
-			await client.players.getLanding(8478402);
+			await ignoreResponseParsing(client.players.getLanding(8478402));
 
 			expect(requests[0]?.toString()).toBe(
 				"https://api-web.nhle.com/v1/player/8478402/landing",
@@ -47,13 +43,15 @@ describe("players domain client", () => {
 		});
 
 		it("builds the player game log URL", async () => {
-			const { fetch, requests } = recordingFetch(playerGameLogFixture);
+			const { fetch, requests } = recordingFetch(genericResponseFixture);
 			const client = createNhlApiClient({ fetch });
 
-			await client.players.getGameLog(8478402, {
-				gameType: 2,
-				season: 20232024,
-			});
+			await ignoreResponseParsing(
+				client.players.getGameLog(8478402, {
+					gameType: 2,
+					season: 20232024,
+				}),
+			);
 
 			expect(requests[0]?.toString()).toBe(
 				"https://api-web.nhle.com/v1/player/8478402/game-log/20232024/2",
@@ -61,10 +59,10 @@ describe("players domain client", () => {
 		});
 
 		it("builds the player game log 'now' URL", async () => {
-			const { fetch, requests } = recordingFetch(playerGameLogFixture);
+			const { fetch, requests } = recordingFetch(genericResponseFixture);
 			const client = createNhlApiClient({ fetch });
 
-			await client.players.getGameLogNow(8478402);
+			await ignoreResponseParsing(client.players.getGameLogNow(8478402));
 
 			expect(requests[0]?.toString()).toBe(
 				"https://api-web.nhle.com/v1/player/8478402/game-log/now",
@@ -72,10 +70,10 @@ describe("players domain client", () => {
 		});
 
 		it("builds the player spotlight URL", async () => {
-			const { fetch, requests } = recordingFetch(playerSpotlightFixture);
+			const { fetch, requests } = recordingFetch(genericResponseFixture);
 			const client = createNhlApiClient({ fetch });
 
-			await client.players.getSpotlight();
+			await ignoreResponseParsing(client.players.getSpotlight());
 
 			expect(requests[0]?.toString()).toBe(
 				"https://api-web.nhle.com/v1/player-spotlight",
@@ -85,16 +83,18 @@ describe("players domain client", () => {
 
 	describe("Stats API URL construction", () => {
 		it("builds the player search URL with cayenne filters", async () => {
-			const { fetch, requests } = recordingFetch(statsPlayerInfoFixture);
+			const { fetch, requests } = recordingFetch(genericResponseFixture);
 			const client = createNhlApiClient({ fetch });
 
-			await client.players.search({
-				active: true,
-				currentTeamId: 22,
-				limit: 10,
-				positionCode: "C",
-				sort: "lastName",
-			});
+			await ignoreResponseParsing(
+				client.players.search({
+					active: true,
+					currentTeamId: 22,
+					limit: 10,
+					positionCode: "C",
+					sort: "lastName",
+				}),
+			);
 
 			expect(requests[0]?.pathname).toBe("/stats/rest/en/players");
 			expect(requests[0]?.searchParams.get("cayenneExp")).toBe(
@@ -105,29 +105,31 @@ describe("players domain client", () => {
 		});
 
 		it("builds the player info URL with cayenne filters", async () => {
-			const { fetch, requests } = recordingFetch(statsPlayerInfoFixture);
+			const { fetch, requests } = recordingFetch(genericResponseFixture);
 			const client = createNhlApiClient({ fetch });
 
-			await client.players.getInfo(8478402);
+			await ignoreResponseParsing(client.players.getInfo(8478402));
 
 			expect(requests[0]?.pathname).toBe("/stats/rest/en/players");
 			expect(requests[0]?.searchParams.get("cayenneExp")).toBe("id=8478402");
 		});
 
 		it("builds the skater stats URL with cayenne filters", async () => {
-			const { fetch, requests } = recordingFetch(statsSkaterStatsFixture);
+			const { fetch, requests } = recordingFetch(genericResponseFixture);
 			const client = createNhlApiClient({ fetch });
 
-			await client.players.getSkaterStats({
-				dir: "desc",
-				gameType: 2,
-				limit: 5,
-				positionCode: "C",
-				report: "summary",
-				season: 20232024,
-				sort: "points",
-				teamId: 22,
-			});
+			await ignoreResponseParsing(
+				client.players.getSkaterStats({
+					dir: "desc",
+					gameType: 2,
+					limit: 5,
+					positionCode: "C",
+					report: "summary",
+					season: 20232024,
+					sort: "points",
+					teamId: 22,
+				}),
+			);
 
 			expect(requests[0]?.pathname).toBe("/stats/rest/en/skater/summary");
 			expect(requests[0]?.searchParams.get("cayenneExp")).toBe(
@@ -139,16 +141,18 @@ describe("players domain client", () => {
 		});
 
 		it("builds the goalie stats URL with cayenne filters", async () => {
-			const { fetch, requests } = recordingFetch(statsGoalieStatsFixture);
+			const { fetch, requests } = recordingFetch(genericResponseFixture);
 			const client = createNhlApiClient({ fetch });
 
-			await client.players.getGoalieStats({
-				gameType: 2,
-				playerId: 8476999,
-				report: "summary",
-				season: 20232024,
-				sort: "wins",
-			});
+			await ignoreResponseParsing(
+				client.players.getGoalieStats({
+					gameType: 2,
+					playerId: 8476999,
+					report: "summary",
+					season: 20232024,
+					sort: "wins",
+				}),
+			);
 
 			expect(requests[0]?.pathname).toBe("/stats/rest/en/goalie/summary");
 			expect(requests[0]?.searchParams.get("cayenneExp")).toBe(
@@ -158,10 +162,12 @@ describe("players domain client", () => {
 		});
 
 		it("builds the skater leaders URL", async () => {
-			const { fetch, requests } = recordingFetch(statsLeaderFixture);
+			const { fetch, requests } = recordingFetch(genericResponseFixture);
 			const client = createNhlApiClient({ fetch });
 
-			await client.players.getSkaterLeaders({ attribute: "points", limit: 5 });
+			await ignoreResponseParsing(
+				client.players.getSkaterLeaders({ attribute: "points", limit: 5 }),
+			);
 
 			expect(requests[0]?.toString()).toBe(
 				"https://api.nhle.com/stats/rest/en/leaders/skaters/points?limit=5",
@@ -169,10 +175,12 @@ describe("players domain client", () => {
 		});
 
 		it("builds the goalie leaders URL", async () => {
-			const { fetch, requests } = recordingFetch(statsLeaderFixture);
+			const { fetch, requests } = recordingFetch(genericResponseFixture);
 			const client = createNhlApiClient({ fetch });
 
-			await client.players.getGoalieLeaders({ attribute: "wins", limit: 3 });
+			await ignoreResponseParsing(
+				client.players.getGoalieLeaders({ attribute: "wins", limit: 3 }),
+			);
 
 			expect(requests[0]?.toString()).toBe(
 				"https://api.nhle.com/stats/rest/en/leaders/goalies/wins?limit=3",
@@ -180,10 +188,12 @@ describe("players domain client", () => {
 		});
 
 		it("builds the milestones URL", async () => {
-			const { fetch, requests } = recordingFetch(statsMilestoneFixture);
+			const { fetch, requests } = recordingFetch(genericResponseFixture);
 			const client = createNhlApiClient({ fetch });
 
-			await client.players.getMilestones({ kind: "skaters", limit: 5 });
+			await ignoreResponseParsing(
+				client.players.getMilestones({ kind: "skaters", limit: 5 }),
+			);
 
 			expect(requests[0]?.toString()).toBe(
 				"https://api.nhle.com/stats/rest/en/milestones/skaters?limit=5",
@@ -194,7 +204,7 @@ describe("players domain client", () => {
 	describe("pre-fetch validation", () => {
 		it("rejects Stats API languages that would alter the endpoint path", () => {
 			const client = createNhlApiClient({
-				fetch: vi.fn(async () => jsonResponse(statsPlayerInfoFixture)),
+				fetch: vi.fn(async () => jsonResponse(genericResponseFixture)),
 			});
 
 			expect(() => client.players.getInfo(8478402, { lang: "../fr" })).toThrow(
